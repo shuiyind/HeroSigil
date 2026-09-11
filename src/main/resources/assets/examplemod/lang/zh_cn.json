@@ -1,0 +1,17 @@
+{
+  "itemGroup.herosigil": "勇者之证",
+  "item.herosigil.hero_sigil": "勇者之证",
+  "item.herosigil.hero_sigil.description": "传说级的饰品，完成成就后可解锁强大的增益效果。",
+
+  "achievement.herosigil.defeat_boss": "击败Boss",
+  "achievement.herosigil.explore_biomes": "探索所有生物群系",
+  "achievement.herosigil.dragon_slayer": "屠龙者",
+  "achievement.herosigil.redstone_master": "红石大师",
+  "achievement.herosigil.collector": "收藏家",
+
+  "buff.herosigil.saturation": "饱和",
+  "buff.herosigil.health_boost": "生命提升",
+  "buff.herosigil.speed": "速度",
+  "buff.herosigil.strength": "力量",
+  "buff.herosigil.night_vision": "夜视"
+}

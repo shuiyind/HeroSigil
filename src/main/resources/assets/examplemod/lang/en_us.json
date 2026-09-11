@@ -1,13 +1,17 @@
 {
-  "itemGroup.examplemod": "Example Mod Tab",
-  "block.examplemod.example_block": "Example Block",
-  "item.examplemod.example_item": "Example Item",
+  "itemGroup.herosigil": "Hero Sigil",
+  "item.herosigil.hero_sigil": "Hero Sigil",
+  "item.herosigil.hero_sigil.description": "A legendary accessory that grants powerful buffs upon completion of achievements.",
+  
+  "achievement.herosigil.defeat_boss": "Defeat a Boss",
+  "achievement.herosigil.explore_biomes": "Explore All Biomes",
+  "achievement.herosigil.dragon_slayer": "Dragon Slayer",
+  "achievement.herosigil.redstone_master": "Redstone Master",
+  "achievement.herosigil.collector": "Master Collector",
 
-  "examplemod.configuration.title": "Example Mod Configs",
-  "examplemod.configuration.section.examplemod.common.toml": "Example Mod Configs",
-  "examplemod.configuration.section.examplemod.common.toml.title": "Example Mod Configs",
-  "examplemod.configuration.items": "Item List",
-  "examplemod.configuration.logDirtBlock": "Log Dirt Block",
-  "examplemod.configuration.magicNumberIntroduction": "Magic Number Text",
-  "examplemod.configuration.magicNumber": "Magic Number"
+  "buff.herosigil.saturation": "Saturation",
+  "buff.herosigil.health_boost": "Health Boost",
+  "buff.herosigil.speed": "Speed",
+  "buff.herosigil.strength": "Strength",
+  "buff.herosigil.night_vision": "Night Vision"
 }
