@@ -1,5 +1,9 @@
 # Hero Sigil (勇者之证) - NeoForge 1.21.1 Accessory Mod
 
+[![GitHub Build](https://github.com/shuiyind/HeroSigil/actions/workflows/gradle-build.yml/badge.svg)](https://github.com/shuiyind/HeroSigil/actions)
+[![License: LGPL-3.0](https://img.shields.io/github/license/shuiyind/HeroSigil)](LICENSE)
+[![NeoForge 1.21.1](https://img.shields.io/badge/NeoForge-1.21.1-blue)]()
+
 ## 📋 模组简介
 
 一个成长型饰品模组，玩家通过完成成就来解锁不同的增益效果（Buff）。装备"勇者之证"后，可以根据完成的成就可以开启不同的 buff 槽位。
@@ -82,6 +86,22 @@ HeroSigil/
 # 生成资源文件（模型、语言包等）
 ./gradlew data
 ```
+
+## 🔄 CI/CD 工作流
+
+本项目使用 GitHub Actions 进行自动化构建和测试：
+
+- **Build Job**: 自动编译模组代码并打包 JAR 文件
+- **Test Job**: 运行单元测试验证核心逻辑
+- **DataGen Job**: 自动生成资源文件和模型数据
+
+每次推送或创建 PR 时会自动触发这些工作流。
+
+## 🌐 GitHub 仓库
+
+- **源码地址**: https://github.com/shuiyind/HeroSigil
+- **Issues**: https://github.com/shuiyind/HeroSigil/issues
+- **CI/CD Status**: [GitHub Actions](https://github.com/shuiyind/HeroSigil/actions)
 
 ## 🔗 依赖说明
 
