@@ -1,0 +1,49 @@
+name: Build with Curios-API Local Dependency
+
+on: [push, pull_request]
+
+env:
+  JAVA_VERSION: '25'
+  DISTRIBUTION: 'temurin'
+
+jobs:
+  build:
+    name: Build Hero Sigil (with local Curios-API)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+            
+      - name: Give gradlew execute permission
+        run: chmod +x ./gradlew
+        
+      - name: Build with Gradle (include Curios-API)
+        run: ./gradlew build --console plain
+        
+      - name: Upload build artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: HeroSigil-build-with-curious
+          path: |
+            HeroSigil/build/libs/
+            !HeroSigil/build/libs/*-sources.jar
+            !HeroSigil/build/libs/*-javadoc.jar
+          retention-days: 7
