@@ -1,0 +1,19 @@
+{
+  "item.herosigil.hero_sigil": "Hero Sigil",
+  "container.herosigil.title": "Hero Sigil - Buff Management",
+  "gui.herosigil.close": "Close",
+  
+  "tooltip.herosigil.slot.1": "Buff Slot 1",
+  "tooltip.herosigil.slot.2": "Buff Slot 2",
+  "tooltip.herosigil.slot.3": "Buff Slot 3",
+  "tooltip.herosigil.slot.locked": "Locked Buff Slot %d",
+  "tooltip.herosigil.slot.unlocked": "Unlocked but inactive - Click to select buff",
+  "tooltip.herosigil.slot.active": "Active: %s",
+  
+  "tooltip.herosigil.requirement": "Requires achievement completion",
+  "tooltip.herosigil.click_to_select": "Click to select a buff",
+  "tooltip.herosigil.click_to_activate": "Click to activate this buff",
+  "tooltip.herosigil.active_status": "%s Active",
+  "tooltip.herosigil.duration": "Duration: %d seconds",
+  "tooltip.herosigil.permanent": "Permanent effect"
+}

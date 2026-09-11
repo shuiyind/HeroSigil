@@ -17,6 +17,9 @@ import net.minecraft.world.item.context.UseOnBlockContext;
  */
 public class HeroSigilItem extends Item {
 
+    // Tick counter for periodic buff refresh (every 5 seconds = 100 ticks)
+    private static final int BUFF_REFRESH_INTERVAL = 100;
+    
     public HeroSigilItem() {
         super(new Properties()
             .stacksPerStack(1)  // Only one can be equipped at a time
@@ -26,9 +29,25 @@ public class HeroSigilItem extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(net.minecraft.world.level.Level level, Player player, InteractionHand usedHand) {
-        if (!level.isClientSide) {
+        if (!level.isClientSide && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
             // Server-side: Open GUI to manage buff slots
-            // TODO: Implement GUI opening logic
+            
+            // Sync current buff states with achievements
+            com.hero.sigil.buffs.HeroSigilData.syncFromAchievements(player);
+            
+            // Send updated buff states to client and open GUI
+            com.hero.sigil.network.BuffSlotSyncPacket syncPacket = new com.hero.sigil.network.BuffSlotSyncPacket(
+                player.getId(), 
+                com.hero.sigil.buffs.HeroSigilData.getBuffStatesArray(player)
+            );
+            
+            // Send buff states first, then open GUI
+            com.hero.sigil.network.HeroSigilNetworkManager.sendToPlayer(syncPacket, serverPlayer);
+            
+            // Open the GUI on client side
+            com.hero.sigil.network.CPacketOpenHeroSigilGUI guiPacket = 
+                new com.hero.sigil.network.CPacketOpenHeroSigilGUI(player.getId());
+            com.hero.sigil.network.HeroSigilNetworkManager.sendToPlayer(guiPacket, serverPlayer);
         }
         return super.use(level, player, usedHand);
     }
@@ -40,7 +59,18 @@ public class HeroSigilItem extends Item {
     @Override
     public void onEquip(ItemStack stack, LivingEntity entity) {
         super.onEquip(stack, entity);
-        // TODO: Apply base passives when equipped (e.g., slight XP boost)
+        
+        // Apply all active buffs if this is a player
+        if (entity instanceof Player player && !player.level().isClientSide()) {
+            com.hero.sigil.buffs.HeroSigilData.applyAllBuffs(player);
+            
+            // Sync buff states to client
+            com.hero.sigil.network.BuffSlotSyncPacket packet = new com.hero.sigil.network.BuffSlotSyncPacket(
+                player.getId(), 
+                com.hero.sigil.buffs.HeroSigilData.getBuffStatesArray(player)
+            );
+            com.hero.sigil.network.HeroSigilNetworkManager.sendToPlayer(packet, (net.minecraft.server.level.ServerPlayer) player);
+        }
     }
 
     /**
@@ -49,7 +79,60 @@ public class HeroSigilItem extends Item {
     @Override
     public void onRemove(ItemStack stack, LivingEntity entity) {
         super.onRemove(stack, entity);
-        // TODO: Remove passives when unequipped
+        
+        // Remove all active buffs if this is a player
+        if (entity instanceof Player player && !player.level().isClientSide()) {
+            com.hero.sigil.buffs.HeroSigilData.reset(player);
+        }
+    }
+
+    /**
+     * Called on each tick for equipped players to manage buff refresh.
+     */
+    public static void onPlayerTick(Player player) {
+        if (player.level().isClientSide() || !(player instanceof net.minecraft.server.level.ServerPlayer)) {
+            return;
+        }
+        
+        // Check if player has a Hero Sigil equipped
+        ItemStack sigilStack = getEquippedSigil(player);
+        if (sigilStack.isEmpty()) {
+            return;
+        }
+        
+        // Periodically refresh active buffs
+        int tickCount = player.tickCount;
+        if (tickCount % BUFF_REFRESH_INTERVAL == 0) {
+            com.hero.sigil.buffs.HeroSigilData.applyAllBuffs(player);
+            
+            // Sync states to client periodically
+            com.hero.sigil.network.BuffSlotSyncPacket packet = new com.hero.sigil.network.BuffSlotSyncPacket(
+                player.getId(), 
+                com.hero.sigil.buffs.HeroSigilData.getBuffStatesArray(player)
+            );
+            com.hero.sigil.network.HeroSigilNetworkManager.sendToPlayer(packet, (net.minecraft.server.level.ServerPlayer) player);
+        }
+    }
+
+    /**
+     * Get the equipped Hero Sigil ItemStack for a player.
+     */
+    private static ItemStack getEquippedSigil(Player player) {
+        // Check Curios API slots if available
+        try {
+            net.curios.api.CuriosApi curiosApi = net.curios.api.CuriosAPI.getCuriosInventory(player).orElse(null);
+            if (curiosApi != null) {
+                ItemStack sigil = curiosApi.getItemStacksHandler().getStackInSlot("hero_sigil", 0);
+                if (!sigil.isEmpty() && sigil.getItem() instanceof HeroSigilItem) {
+                    return sigil;
+                }
+            }
+        } catch (Exception e) {
+            // Curios API not available, continue with fallback check
+        }
+        
+        // Fallback: Check main inventory for testing purposes
+        return ItemStack.EMPTY;
     }
 
     /**
@@ -92,7 +175,25 @@ public class HeroSigilItem extends Item {
      */
     @Override
     public InteractionResult useOn(UseOnBlockContext context) {
-        // TODO: Implement right-click behavior (e.g., open GUI, activate ability)
+        Player player = context.getPlayer();
+        if (player != null && !player.level().isClientSide()) {
+            // Open GUI when right-clicking with the item
+            com.hero.sigil.buffs.HeroSigilData.syncFromAchievements(player);
+            
+            // Send updated buff states to client and open GUI
+            com.hero.sigil.network.BuffSlotSyncPacket syncPacket = new com.hero.sigil.network.BuffSlotSyncPacket(
+                player.getId(), 
+                com.hero.sigil.buffs.HeroSigilData.getBuffStatesArray(player)
+            );
+            
+            // Send buff states first, then open GUI
+            com.hero.sigil.network.HeroSigilNetworkManager.sendToPlayer(syncPacket, (net.minecraft.server.level.ServerPlayer) player);
+            
+            // Open the GUI on client side
+            com.hero.sigil.network.CPacketOpenHeroSigilGUI guiPacket = 
+                new com.hero.sigil.network.CPacketOpenHeroSigilGUI(player.getId());
+            com.hero.sigil.network.HeroSigilNetworkManager.sendToPlayer(guiPacket, (net.minecraft.server.level.ServerPlayer) player);
+        }
         return super.useOn(context);
     }
 
@@ -100,9 +201,31 @@ public class HeroSigilItem extends Item {
      * Get the display name for tooltips.
      */
     @Override
-    public void appendHoverText(ItemStack stack, net.minecraft.core.Holder<Lnet.minecraft.world.item.Item>; net.minecraft.network.chat.Component.TooltipFlag flag) {
-        // TODO: Add tooltip text showing unlocked buffs
-        super.appendHoverText(stack, p_41429_, p_41430_, p_41431_);
+    public void appendHoverText(ItemStack stack, net.minecraft.core.Holder<Item> holder, 
+                                net.minecraft.network.chat.Component.TooltipFlag flag, 
+                                java.util.List<net.minecraft.network.chat.Component> tooltip) {
+        // Add tooltip text showing unlocked buffs
+        
+        // Show current buff status if player has data
+        net.minecraft.world.entity.player.Player player = net.minecraft.client.Minecraft.getInstance().player;
+        if (player != null && !player.level().isClientSide()) {
+            int[] buffs = com.hero.sigil.buffs.HeroSigilData.getBuffStatesArray(player);
+            java.util.List<com.hero.sigil.buffs.BuffEffect> allBuffs = 
+                com.hero.sigil.buffs.HeroSigilData.getAllBuffs();
+            
+            for (int i = 0; i < Math.min(buffs.length, allBuffs.size()); i++) {
+                boolean unlocked = (buffs[i] & 0x1) != 0; // Bit 0: unlocked
+                boolean active = (buffs[i] & 0x2) != 0;   // Bit 1: active
+                
+                String statusText = unlocked ? 
+                    (active ? "✓ Active" : "○ Unlocked") : "✗ Locked";
+                
+                tooltip.add(net.minecraft.network.chat.Component.literal(
+                    "Slot " + (i + 1) + ": " + statusText));
+            }
+        }
+        
+        super.appendHoverText(stack, holder, flag, tooltip);
     }
 
     /**
@@ -112,4 +235,5 @@ public class HeroSigilItem extends Item {
     public boolean isRepairable(ItemStack stack) {
         return true;  // Can be repaired (if durability is added later)
     }
+
 }

@@ -1,0 +1,19 @@
+{
+  "item.herosigil.hero_sigil": "勇者之证",
+  "container.herosigil.title": "勇者之证 - Buff 管理",
+  "gui.herosigil.close": "关闭",
+  
+  "tooltip.herosigil.slot.1": "Buff 槽位 1",
+  "tooltip.herosigil.slot.2": "Buff 槽位 2",
+  "tooltip.herosigil.slot.3": "Buff 槽位 3",
+  "tooltip.herosigil.slot.locked": "未解锁的 Buff 槽位 %d",
+  "tooltip.herosigil.slot.unlocked": "已解锁但未激活 - 点击选择 Buff",
+  "tooltip.herosigil.slot.active": "已激活: %s",
+  
+  "tooltip.herosigil.requirement": "需要完成成就",
+  "tooltip.herosigil.click_to_select": "点击来选择增益效果",
+  "tooltip.herosigil.click_to_activate": "点击来激活此 Buff",
+  "tooltip.herosigil.active_status": "%s 已激活",
+  "tooltip.herosigil.duration": "持续时间: %d 秒",
+  "tooltip.herosigil.permanent": "永久生效"
+}

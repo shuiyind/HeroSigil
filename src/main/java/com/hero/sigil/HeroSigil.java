@@ -62,6 +62,9 @@ public class HeroSigil {
 
         // Initialization task is called when the mod is being initialized
         modEventBus.addListener(this::commonSetup);
+
+        // Register network handlers
+        modEventBus.addListener(com.hero.sigil.network.HeroSigilNetworkManager::registerHandlers);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

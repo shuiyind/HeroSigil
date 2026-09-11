@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="180" viewBox="0 0 256 180">
+  <!-- Background -->
+  <rect width="256" height="180" fill="#1a1a1a"/>
+  
+  <!-- Border -->
+  <rect x="2" y="2" width="252" height="176" fill="none" stroke="#4a4a4a" stroke-width="4"/>
+  
+  <!-- Title area -->
+  <text x="128" y="20" font-family="Arial" font-size="14" fill="white" text-anchor="middle">Hero Sigil</text>
+  
+  <!-- Buff slots background -->
+  <rect x="67" y="50" width="32" height="32" fill="#2a2a2a" stroke="#6a6a6a" stroke-width="2"/>
+  <rect x="114" y="50" width="32" height="32" fill="#2a2a2a" stroke="#6a6a6a" stroke-width="2"/>
+  <rect x="161" y="50" width="32" height="32" fill="#2a2a2a" stroke="#6a6a6a" stroke-width="2"/>
+  
+  <!-- Close button area -->
+  <rect x="108" y="145" width="100" height="20" fill="#4a4a4a" stroke="#6a6a6a" stroke-width="2"/>
+</svg>
