@@ -3,7 +3,7 @@ name: Build with Curios-API Local Dependency
 on: [push, pull_request]
 
 env:
-  JAVA_VERSION: '25'
+  JAVA_VERSION_FILE: '.java-version'
   DISTRIBUTION: 'temurin'
 
 jobs:
@@ -17,11 +17,11 @@ jobs:
         with:
           submodules: recursive
       
-      - name: Setup Java ${{ env.JAVA_VERSION }}
+      - name: Setup Java from version file
         uses: actions/setup-java@v4
         with:
           distribution: ${{ env.DISTRIBUTION }}
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version-file: ${{ env.JAVA_VERSION_FILE }}
           
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
