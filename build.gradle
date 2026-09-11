@@ -105,9 +105,8 @@ dependencies {
     // For all intends and purposes: You can treat this dependency as if it is a normal library you would use.
     implementation "net.neoforged:neoforge:${neo_version}"
 
-    // Curios API for accessory/equipment slots
-    compileOnly "top.theillusivec4.curios:curios-neoforge-api:9.5.1+1.21.1:api"
-    runtimeOnly "top.theillusivec4.curios:curios-neoforge:9.5.1+1.21.1"
+    // Curios API for accessory/equipment slots (local project dependency)
+    compileOnly project(":Curios-API")
 
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
