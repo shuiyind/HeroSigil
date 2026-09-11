@@ -15,6 +15,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         
+      - name: Clone Curios-API dependency
+        run: |
+          git clone --depth 1 https://github.com/shuiyind/Curios-API.git ../Curios-API
+          
       - name: Setup Java ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
