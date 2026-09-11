@@ -1,0 +1,3 @@
+[submodule "libs/Curios-API"]
+	path = libs/Curios-API
+	url = https://github.com/shuiyind/Curios-API.git

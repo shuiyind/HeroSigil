@@ -10,4 +10,4 @@ plugins {
 }
 
 include ':Curios-API'
-project(':Curios-API').projectDir = file('../Curios-API')
+project(':Curios-API').projectDir = file('libs/Curios-API')
