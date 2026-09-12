@@ -13,9 +13,12 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,7 +33,7 @@ public class AchievementTracker {
     private static final Map<String, PlayerProgress> PLAYER_PROGRESSES = new HashMap<>();
     
     // Track biome exploration per player (key: playerId -> set of biomes visited)
-    private static final Map<String, Set<ResourceKey<net.minecraft.world.level.Level>>> BIOME_VISITS = new HashMap<>();
+    private static final Map<String, Set<ResourceKey<net.minecraft.world.level.Biome>>> BIOME_VISITS = new HashMap<>();
 
     /**
      * Achievements that unlock buff slots on the Hero Sigil.
@@ -59,43 +62,165 @@ public class AchievementTracker {
     public static class PlayerProgress {
         private final Map<AchievementType, Boolean> unlockedAchievements = new HashMap<>();
         private final Map<AchievementType, Integer> progressValues = new HashMap<>();
+        
+        // Boss 击杀计数
+        private int bossKillCount = 0;
+        
+        // 保存玩家引用用于通知和动画效果
+        private Player currentPlayer;
+        
+        // 成就历史记录
+        private final List<AchievementType> achievementHistory = new ArrayList<>();
 
         public boolean isUnlocked(AchievementType achievement) {
             return unlockedAchievements.getOrDefault(achievement, false);
         }
 
-        public void unlock(AchievementType achievement) {
+        /**
+         * 解锁成就
+         */
+        public void unlock(AchievementType achievement, Player player) {
+            this.currentPlayer = player;
             if (!isUnlocked(achievement)) {
                 unlockedAchievements.put(achievement, true);
-                // Notify player of new buff slot available
+                achievementHistory.add(achievement);
                 notifyPlayerUnlock(achievement);
             }
         }
 
+        /**
+         * 通知玩家成就已解锁
+         */
         private void notifyPlayerUnlock(AchievementType achievement) {
-            // TODO: Send packet to client to show notification
+            if (currentPlayer != null) {
+                String achievementName = getAchievementName(achievement);
+                
+                // 发送中文通知
+                currentPlayer.sendSystemMessage(
+                    net.minecraft.network.chat.Component.literal("§6§l成就解锁§r§f: " + achievementName + " - 新的 buff 槽位已解锁！")
+                );
+                
+                // 播放 buff 解锁音效
+                currentPlayer.level().playSound(
+                    null,
+                    currentPlayer.getBlockX(),
+                    currentPlayer.getBlockY(),
+                    currentPlayer.getBlockZ(),
+                    com.hero.sigil.registry.ModRegistries.BUFF_UNLOCK.get(),
+                    net.minecraft.sounds.SoundSource.PLAYERS,
+                    1.0f,
+                    1.0f
+                );
+                
+                // 播放成就完成动画
+                playAchievementCompleteAnimation(currentPlayer, achievement);
+            }
         }
 
-        public void incrementProgress(AchievementType achievement, int amount) {
+        public void incrementProgress(AchievementType achievement, int amount, Player player) {
             progressValues.merge(achievement, amount, Integer::sum);
             
             // Check if progress threshold is met (simplified logic)
-            checkUnlock(achievement);
+            checkUnlock(achievement, player);
         }
 
-        private void checkUnlock(AchievementType achievement) {
+        private void checkUnlock(AchievementType achievement, Player player) {
             switch (achievement) {
                 case DEFEAT_BOSS -> {
                     if (progressValues.getOrDefault(achievement, 0) >= 1) {
-                        unlock(achievement);
+                        unlock(achievement, player);
                     }
                 }
                 default -> {}
             }
         }
 
+        /**
+         * 播放成就完成动画（金色粒子效果 + 音效）
+         */
+        private void playAchievementCompleteAnimation(Player player, AchievementType achievement) {
+            // 播放金色粒子效果
+            for (int i = 0; i < 20; i++) {
+                double offsetX = (Math.random() - 0.5) * 2;
+                double offsetY = Math.random() * 2;
+                double offsetZ = (Math.random() - 0.5) * 2;
+                
+                player.level().addParticle(
+                    net.minecraft.core.particles.ParticleTypes.NOTE,
+                    player.getX() + offsetX,
+                    player.getY() + offsetY,
+                    player.getZ() + offsetZ,
+                    1.0, 0.0, 0.0
+                );
+            }
+            
+            // 播放成就授予音效
+            player.level().playSound(
+                null,
+                player.getBlockX(),
+                player.getBlockY(),
+                player.getBlockZ(),
+                net.minecraft.sounds.SoundEvents.ACHIEVEMENT_GRANTED,
+                net.minecraft.sounds.SoundSource.PLAYERS,
+                1.0f,
+                1.0f
+            );
+        }
+
+        public void incrementBossKillCount() {
+            bossKillCount++;
+        }
+
+        public int getBossKillCount() {
+            return bossKillCount;
+        }
+
         public Map<AchievementType, Boolean> getUnlockedAchievements() {
             return new HashMap<>(unlockedAchievements);
+        }
+
+        /**
+         * 获取成就历史
+         */
+        public List<AchievementType> getAchievementHistory() {
+            return new ArrayList<>(achievementHistory);
+        }
+
+        /**
+         * 显示成就历史
+         */
+        public void showAchievementHistory(Player player) {
+            if (achievementHistory.isEmpty()) {
+                player.sendSystemMessage(
+                    net.minecraft.network.chat.Component.literal("§e§l勇者之证§r§f: 尚未解锁任何成就")
+                );
+                return;
+            }
+            
+            player.sendSystemMessage(
+                net.minecraft.network.chat.Component.literal("§6§l已解锁的成就§r§f:")
+            );
+            
+            for (AchievementType achievement : achievementHistory) {
+                String name = getAchievementName(achievement);
+                player.sendSystemMessage(
+                    net.minecraft.network.chat.Component.literal("  §a✓§r §f" + name)
+                );
+            }
+        }
+
+        /**
+         * 获取成就名称
+         */
+        private String getAchievementName(AchievementType achievement) {
+            return switch (achievement) {
+                case DEFEAT_BOSS -> "击败 Boss";
+                case EXPLORE_ALL_BIOMES -> "探索世界";
+                case DEFEAT_ENDER_DRAGON -> "击败末影龙";
+                case BUILD_REDSTONE_MACHINE -> "建造红石机器";
+                case COMPLETE_COLLECTION -> "完成收集";
+                default -> "未知成就";
+            };
         }
     }
 
@@ -113,25 +238,63 @@ public class AchievementTracker {
         
         // Track biome exploration for EXPLORE_ALL_BIOMES achievement
         if (player instanceof ServerPlayer serverPlayer) {
+            // 每 100 tick (5 秒) 记录一次群系，而非每个 tick
+            if (player.tickCount % 100 != 0) {
+                return;
+            }
+            
             String playerId = player.getStringUUID().toString();
             
-            // Get current biome key
-            ResourceKey<net.minecraft.world.level.Level> currentBiome = 
-                player.level().getBiome(player.blockPosition()).is(Registries.BIOME);
+            // 已访问 50 个群系后停止记录（超过 20 已解锁成就）
+            Set<ResourceKey<net.minecraft.world.level.Biome>> visitedBiomes = BIOME_VISITS.get(playerId);
+            if (visitedBiomes != null && visitedBiomes.size() >= 50) {
+                return;
+            }
+            
+            // 获取当前群系（使用 unwrapKey() 获取 ResourceKey<Biome>）
+            var biomeHolder = player.level().getBiome(player.blockPosition());
+            var currentBiome = biomeHolder.unwrapKey().orElse(null);
             
             if (currentBiome != null) {
-                BIOME_VISITS.computeIfAbsent(playerId, k -> new HashSet<>()).add(currentBiome);
+                boolean isNewBiome = visitedBiomes == null || !visitedBiomes.contains(currentBiome);
                 
-                // Check if all biomes are explored (simplified check - in production would use a defined list)
-                PlayerProgress progress = getPlayerProgress(player);
-                Set<ResourceKey<net.minecraft.world.level.Level>> visitedBiomes = BIOME_VISITS.get(playerId);
-                
-                // For now, unlock after visiting 20 different biomes as a reasonable threshold
-                if (visitedBiomes.size() >= 20 && !progress.isUnlocked(AchievementType.EXPLORE_ALL_BIOMES)) {
-                    progress.unlock(AchievementType.EXPLORE_ALL_BIOMES);
+                if (isNewBiome) {
+                    BIOME_VISITS.computeIfAbsent(playerId, k -> new HashSet<>()).add(currentBiome);
+                    
+                    // 更新进度提示变量（添加新群系后的数量）
+                    int progressCount = visitedBiomes.size();
+                    
+                    // 每访问 5 个新群系，发送一次进度提示
+                    if (progressCount % 5 == 0 && progressCount < 20) {
+                        int percentage = (int) ((double) progressCount / 20 * 100);
+                        player.sendSystemMessage(
+                            net.minecraft.network.chat.Component.literal(
+                                "§b§l群系探索§r§f: " + progressCount + "/20 (" + percentage + "%)"
+                            )
+                        );
+                    }
+                    
+                    // 检查是否解锁成就
+                    PlayerProgress progress = getPlayerProgress(player);
+                    
+                    // 访问 20 个不同群系后解锁 EXPLORE_ALL_BIOMES 成就
+                    if (progressCount >= 20 && !progress.isUnlocked(AchievementType.EXPLORE_ALL_BIOMES)) {
+                        progress.unlock(AchievementType.EXPLORE_ALL_BIOMES, player);
+                    }
                 }
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerLogout(PlayerEvent.LoggedOutEvent event) {
+        String playerId = event.getPlayer().getStringUUID().toString();
+        
+        // 清理群系访问数据
+        BIOME_VISITS.remove(playerId);
+        
+        // 清理成就进度数据
+        PLAYER_PROGRESSES.remove(playerId);
     }
 
     @SubscribeEvent
@@ -139,57 +302,66 @@ public class AchievementTracker {
         if (event.getSource().getDirectEntity() instanceof Player player) {
             PlayerProgress progress = getPlayerProgress(player);
             
-            // Check for boss kills (any entity with BossDisplayData or specific boss types)
-            boolean isBoss = event.getEntity().getType().getDefaultRegistryName().getPath().contains("boss") ||
-                            event.getEntity().hasCustomName() && 
-                            event.getEntity().getDisplayName().getString().contains("Boss");
-            
-            // Also check for Wither and Ender Dragon specifically
-            if (event.getEntity() instanceof WitherBoss) {
-                isBoss = true;
+            // 使用 isBossEntity() 方法检测 Boss
+            if (isBossEntity(event.getEntity())) {
+                String bossName = event.getEntity().getDisplayName().getString();
                 
-                // Unlock DEFEAT_BOSS achievement
-                progress.incrementProgress(AchievementType.DEFEAT_BOSS, 1);
+                // 增加 Boss 击杀计数
+                progress.incrementBossKillCount();
+                progress.incrementProgress(AchievementType.DEFEAT_BOSS, 1, player);
                 
-                // Check if this was the final boss to unlock additional rewards
-                if (!progress.isUnlocked(AchievementType.DEFEAT_ENDER_DRAGON)) {
-                    // In a full implementation, we'd track which bosses have been defeated
-                }
-            } else if (event.getEntity() instanceof EnderDragon) {
-                isBoss = true;
-                
-                // Unlock DEFEAT_BOSS achievement
-                progress.incrementProgress(AchievementType.DEFEAT_BOSS, 1);
-                
-                // Specifically unlock ENDER_DRAGON achievement
-                if (!progress.isUnlocked(AchievementType.DEFEAT_ENDER_DRAGON)) {
-                    progress.unlock(AchievementType.DEFEAT_ENDER_DRAGON);
-                    
-                    // Also count as a boss kill for the general DEFEAT_BOSS achievement
-                    if (progress.progressValues.getOrDefault(AchievementType.DEFEAT_BOSS, 0) < 1) {
-                        progress.incrementProgress(AchievementType.DEFEAT_BOSS, 1);
+                // 特殊处理末影龙
+                if (event.getEntity() instanceof EnderDragon) {
+                    if (!progress.isUnlocked(AchievementType.DEFEAT_ENDER_DRAGON)) {
+                        progress.unlock(AchievementType.DEFEAT_ENDER_DRAGON, player);
+                        
+                        // 发送中文通知
+                        player.sendSystemMessage(
+                            net.minecraft.network.chat.Component.literal("§e§l成就解锁§r§f: 成功击败末影龙！新的 buff 槽位已解锁。")
+                        );
+                        HeroSigil.LOGGER.info("Player {} defeated Ender Dragon", player.getScoreboardName());
+                    } else {
+                        // 发送击杀通知
+                        player.sendSystemMessage(
+                            net.minecraft.network.chat.Component.literal("§c§lBoss 击杀§r§f: 成功击败 " + bossName + "！")
+                        );
                     }
-                }
-            } else if (isBoss && event.getEntity().getType() != EntityType.ENDER_DRAGON) {
-                // Generic boss kill tracking
-                progress.incrementProgress(AchievementType.DEFEAT_BOSS, 1);
-                
-                // Unlock DEFEAT_BOSS achievement after first valid boss kill
-                if (!progress.isUnlocked(AchievementType.DEFEAT_BOSS)) {
-                    progress.unlock(AchievementType.DEFEAT_BOSS);
+                } else {
+                    // 发送其他 Boss 击杀通知
+                    player.sendSystemMessage(
+                        net.minecraft.network.chat.Component.literal("§c§lBoss 击杀§r§f: 成功击败 " + bossName + "！")
+                    );
                 }
             }
         }
     }
 
     /**
-     * Check for specific entity types that count as bosses.
+     * 检查实体是否为 Boss 类型
      */
     private static boolean isBossEntity(net.minecraft.world.entity.Entity entity) {
-        return switch (entity.getType().getDefaultRegistryName().getPath()) {
-            case "ender_dragon", "wither" -> true;
-            default -> false;
-        };
+        // 方法 1: 检查实体类型是否为已知的 Boss
+        if (entity instanceof WitherBoss || entity instanceof EnderDragon) {
+            return true;
+        }
+        
+        // 方法 2: 检查实体是否带有 BossDisplayData
+        BossDisplayData bossDisplay = entity.getType().getBossDisplayData();
+        if (bossDisplay != null) {
+            return true;
+        }
+        
+        // 方法 3: 检查实体 ID 路径
+        var registryName = entity.getType().getDefaultRegistryName();
+        if (registryName != null) {
+            String path = registryName.getPath();
+            return switch (path) {
+                case "ender_dragon", "wither", "warden", "elder_guardian" -> true;
+                default -> false;
+            };
+        }
+        
+        return false;
     }
 
     /**
@@ -222,7 +394,7 @@ public class AchievementTracker {
      */
     public static void forceUnlockAchievement(Player player, AchievementType achievement) {
         PlayerProgress progress = PLAYER_PROGRESSES.computeIfAbsent(player.getStringUUID().toString(), k -> new PlayerProgress());
-        progress.unlock(achievement);
+        progress.unlock(achievement, player);
     }
 
     /**
@@ -257,12 +429,26 @@ public class AchievementTracker {
     }
 
     /**
-     * Get the current biome visited count for a player (for debugging/testing).
+     * 获取当前群系访问计数（用于调试/测试）
      */
     public static int getBiomeVisitCount(Player player) {
         String playerId = player.getStringUUID().toString();
-        Set<ResourceKey<net.minecraft.world.level.Level>> biomes = BIOME_VISITS.get(playerId);
+        Set<ResourceKey<net.minecraft.world.level.Biome>> biomes = BIOME_VISITS.get(playerId);
         return biomes != null ? biomes.size() : 0;
+    }
+
+    /**
+     * 显示玩家的成就历史
+     */
+    public static void showAchievements(Player player) {
+        PlayerProgress progress = PLAYER_PROGRESSES.get(player.getStringUUID().toString());
+        if (progress != null) {
+            progress.showAchievementHistory(player);
+        } else {
+            player.sendSystemMessage(
+                net.minecraft.network.chat.Component.literal("§e§l勇者之证§r§f: 尚未检测到您的成就数据")
+            );
+        }
     }
 
     /**

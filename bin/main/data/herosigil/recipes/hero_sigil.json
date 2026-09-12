@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SSS",
+    "SCS",
+    "SSS"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:nether_star"
+    },
+    "C": {
+      "tag": "minecraft:armor_chestplates"
+    }
+  },
+  "result": {
+    "id": "herosigil:hero_sigil",
+    "count": 1
+  }
+}

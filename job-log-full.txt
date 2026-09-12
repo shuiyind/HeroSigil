@@ -1,0 +1,590 @@
+﻿To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Calculating task graph as configuration cache cannot be reused because file 'settings.gradle' has changed.
+> Task :processTestResources NO-SOURCE
+> Task :processResources UP-TO-DATE
+> Task :neoFormJoined1.21.1-20240808.144430DownloadAssets UP-TO-DATE
+> Task :neoFormJoined1.21.1-20240808.144430ExtractNatives UP-TO-DATE
+> Task :cacheVersionManifest1.21.1 UP-TO-DATE
+> Task :cacheVersionExecutableServer1.21.1 UP-TO-DATE
+> Task :cacheVersionExecutableClient1.21.1 UP-TO-DATE
+> Task :cacheVersionMappingsClient1.21.1 UP-TO-DATE
+> Task :cacheVersionExtractedServer1.21.1 UP-TO-DATE
+> Task :neoFormListLibraries UP-TO-DATE
+> Task :neoFormMergeMappings UP-TO-DATE
+> Task :create1.21.1ClientExtraJar UP-TO-DATE
+> Task :selectRawArtifactNg_dummy_ng.net.minecraft_client_1.21.1_client-extra UP-TO-DATE
+> Task :neoFormStripServer UP-TO-DATE
+> Task :neoFormListTransformLibraries UP-TO-DATE
+> Task :neoFormStripClientFinals UP-TO-DATE
+> Task :neoFormStripClient UP-TO-DATE
+> Task :neoFormMerge UP-TO-DATE
+> Task :neoFormRename UP-TO-DATE
+> Task :neoFormDecompile UP-TO-DATE
+> Task :neoFormInject UP-TO-DATE
+> Task :neoFormPatch UP-TO-DATE
+> Task :neoFormPatchUserDev UP-TO-DATE
+> Task :neoFormTransformSource UP-TO-DATE
+> Task :neoFormRecompile UP-TO-DATE
+> Task :supplyRawJarForneoFormJoined1.21.1-20240808.144430 UP-TO-DATE
+> Task :selectRawArtifactNg_dummy_ng.net.neoforged_neoforge_21.1.235 UP-TO-DATE
+> Task :writeMinecraftClasspathJunit UP-TO-DATE
+
+> Task :compileJava
+.\gradlew : C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\achievement\AchievementTracker.java:7
+: 错误: 找不到符号
+At line:15 char:4927
++ ... \Desktop\CodeSYD\HeroSigil ; .\gradlew build --no-daemon 2>&1 | Out-F ...
++                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\shuiy\...va:7: 错误: 找不到符号:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+import net.minecraft.world.entity.boss.BossDisplayData;
+                                      ^
+  符号:   类 BossDisplayData
+  位置: 程序包 net.minecraft.world.entity.boss
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\achievement\AchievementTracker.java:8: 错误: 找不到符号
+import net.minecraft.world.entity.boss.WitherBoss;
+                                      ^
+  符号:   类 WitherBoss
+  位置: 程序包 net.minecraft.world.entity.boss
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\achievement\AchievementTracker.java:9: 错误: 找不到符号
+import net.minecraft.world.entity.monster.EnderDragon;
+                                         ^
+  符号:   类 EnderDragon
+  位置: 程序包 net.minecraft.world.entity.monster
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\HeroSigilData.java:272: 错误: 找不到符号
+    public static java.util.List<MobEffectInstance> getActiveEffects(Player player) {
+                                 ^
+  符号:   类 MobEffectInstance
+  位置: 类 HeroSigilData
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:129: 错误: 找不到符号
+    public static class Factory implements net.minecraft.world.inventory.MenuType.FriendlyByteBufFactory<HeroSigilMenu>
+ {
+                                                                                 ^
+  符号:   类 FriendlyByteBufFactory
+  位置: 类 MenuType
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\screen\HeroSigilScreen.java:20: 错误: 找不到符号
+public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
+                                                             ^
+  符号: 类 HeroSigilMenu
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\screen\HeroSigilScreen.java:34: 错误: 找不到符号
+    public HeroSigilScreen(HeroSigilMenu menu, Inventory inventory, Component component) {
+                           ^
+  符号:   类 HeroSigilMenu
+  位置: 类 HeroSigilScreen
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\screen\HeroSigilScreen.java:173: 错误: 找不到符号
+    public HeroSigilMenu getMenu() {
+           ^
+  符号:   类 HeroSigilMenu
+  位置: 类 HeroSigilScreen
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\item\HeroSigilItem.java:10: 错误: 找不到符号
+import net.minecraft.world.item.context.UseOnBlockContext;
+                                       ^
+  符号:   类 UseOnBlockContext
+  位置: 程序包 net.minecraft.world.item.context
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\item\HeroSigilItem.java:177: 错误: 找不到符号
+    public InteractionResult useOn(UseOnBlockContext context) {
+                                   ^
+  符号:   类 UseOnBlockContext
+  位置: 类 HeroSigilItem
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\item\HeroSigilItem.java:177: 错误: 找不到符号
+    public InteractionResult useOn(UseOnBlockContext context) {
+           ^
+  符号:   类 InteractionResult
+  位置: 类 HeroSigilItem
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\item\HeroSigilItem.java:205: 错误: 找不到符号
+                                net.minecraft.network.chat.Component.TooltipFlag flag, 
+                                                                    ^
+  符号:   类 TooltipFlag
+  位置: 接口 Component
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\network\BuffSlotSyncPacket.java:6: 错误: 找不到符号
+import net.neoforged.neoforge.network.RegisterPayloadHandlersCallback;
+                                     ^
+  符号:   类 RegisterPayloadHandlersCallback
+  位置: 程序包 net.neoforged.neoforge.network
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\network\BuffSlotSyncPacket.java:29: 错误: 找不到符号
+    public static void register(RegisterPayloadHandlersCallback event) {
+                                ^
+  符号:   类 RegisterPayloadHandlersCallback
+  位置: 类 BuffSlotSyncPacket
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\persistence\CapabilityEvents.java:20: 错误: 找不到符号
+    public static void onPlayerLogout(PlayerEvent.LoggedOutEvent event) {
+                                                 ^
+  符号:   类 LoggedOutEvent
+  位置: 类 PlayerEvent
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\registry\ModRegistries.java:9: 错误: 找不到符号
+import net.neoforged.neoforge.registries.DeferredItems;
+                                        ^
+  符号:   类 DeferredItems
+  位置: 程序包 net.neoforged.neoforge.registries
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\registry\ModRegistries.java:20: 错误: 找不到符号
+    public static final DeferredRegister.Menus MENUS = 
+                                        ^
+  符号:   类 Menus
+  位置: 类 DeferredRegister
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\registry\ModRegistries.java:27: 错误: 程序包DeferredIt
+ems不存在
+    public static final DeferredItems.DeferredItem<HeroSigilItem> HERO_SIGIL = 
+                                     ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\achievement\AchievementTracker.java:26: 错误: 找不到符号
+@EventBusSubscriber(modid = HeroSigil.MODID, bus = EventBusSubscriber.Bus.GAME)
+                            ^
+  符号: 变量 HeroSigil
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\achievement\AchievementTracker.java:26: 警告: [remo
+val] EventBusSubscriber 中的 bus() 已过时, 且标记为待删除
+@EventBusSubscriber(modid = HeroSigil.MODID, bus = EventBusSubscriber.Bus.GAME)
+                                             ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\achievement\AchievementTracker.java:26: 警告: [remo
+val] EventBusSubscriber 中的 Bus 已过时, 且标记为待删除
+@EventBusSubscriber(modid = HeroSigil.MODID, bus = EventBusSubscriber.Bus.GAME)
+                                                                     ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\achievement\AchievementTracker.java:112: 错误: 找不到符
+号
+        Player player = event.getPlayer();
+                             ^
+  符号:   方法 getPlayer()
+  位置: 类型为Pre的变量 event
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\achievement\AchievementTracker.java:120: 错误: 对于is
+(ResourceKey<Registry<Biome>>), 找不到合适的方法
+                player.level().getBiome(player.blockPosition()).is(Registries.BIOME);
+                                                               ^
+    方法 Holder.is(ResourceLocation)不适用
+      (参数不匹配; ResourceKey<Registry<Biome>>无法转换为ResourceLocation)
+    方法 Holder.is(ResourceKey<Biome>)不适用
+      (参数不匹配; ResourceKey<Registry<Biome>>无法转换为ResourceKey<Biome>)
+    方法 Holder.is(Predicate<ResourceKey<Biome>>)不适用
+      (参数不匹配; ResourceKey<Registry<Biome>>无法转换为Predicate<ResourceKey<Biome>>)
+    方法 Holder.is(TagKey<Biome>)不适用
+      (参数不匹配; ResourceKey<Registry<Biome>>无法转换为TagKey<Biome>)
+    方法 Holder.is(Holder<Biome>)不适用
+      (参数不匹配; ResourceKey<Registry<Biome>>无法转换为Holder<Biome>)
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\achievement\AchievementTracker.java:143: 错误: 找不到符
+号
+            boolean isBoss = event.getEntity().getType().getDefaultRegistryName().getPath().contains("boss") ||
+                                                        ^
+  符号:   方法 getDefaultRegistryName()
+  位置: 类 EntityType<CAP#1>
+  其中, CAP#1是新类型变量:
+    CAP#1从?的捕获扩展Entity
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\achievement\AchievementTracker.java:148: 错误: 找不到符
+号
+            if (event.getEntity() instanceof WitherBoss) {
+                                             ^
+  符号:   类 WitherBoss
+  位置: 类 AchievementTracker
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\achievement\AchievementTracker.java:158: 错误: 找不到符
+号
+            } else if (event.getEntity() instanceof EnderDragon) {
+                                                    ^
+  符号:   类 EnderDragon
+  位置: 类 AchievementTracker
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\achievement\AchievementTracker.java:189: 错误: 找不到符
+号
+        return switch (entity.getType().getDefaultRegistryName().getPath()) {
+                                       ^
+  符号:   方法 getDefaultRegistryName()
+  位置: 类 EntityType<CAP#1>
+  其中, CAP#1是新类型变量:
+    CAP#1从?的捕获扩展Entity
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\BuffEffect.java:43: 错误: 不兼容的类型: MobEffect无法
+转换为Holder<MobEffect>
+        player.removeEffect(mobEffect);
+                            ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\BuffEffect.java:47: 错误: 不兼容的类型: MobEffect无法
+转换为Holder<MobEffect>
+            mobEffect, 
+            ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\BuffEffect.java:61: 错误: 不兼容的类型: MobEffect无法
+转换为Holder<MobEffect>
+        if (player.hasEffect(mobEffect)) {
+                             ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\BuffEffect.java:62: 错误: 不兼容的类型: MobEffect无法
+转换为Holder<MobEffect>
+            player.removeEffect(mobEffect);
+                                ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\BuffEffect.java:113: 错误: 不兼容的类型: Holder<Mob
+Effect>无法转换为MobEffect
+            MobEffects.SATURATION,
+                      ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\BuffEffect.java:122: 错误: 不兼容的类型: Holder<Mob
+Effect>无法转换为MobEffect
+            MobEffects.HEALTH_BOOST,
+                      ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\BuffEffect.java:131: 错误: 找不到符号
+            MobEffects.SPEED,
+                      ^
+  符号:   变量 SPEED
+  位置: 类 MobEffects
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\HeroSigilData.java:48: 错误: 找不到符号
+            sigilData.setTag(slotKey, slotData);
+                     ^
+  符号:   方法 setTag(String,CompoundTag)
+  位置: 类型为CompoundTag的变量 sigilData
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\HeroSigilData.java:116: 错误: 程序包AchievementT
+racker不存在
+        for (int i = 0; i < Math.min(buffs.size(), AchievementTracker.AchievementType.values().length); i++) {
+                                                                     ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\HeroSigilData.java:117: 错误: 程序包AchievementT
+racker不存在
+            AchievementTracker.AchievementType achievement = AchievementTracker.AchievementType.values()[i];
+                              ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\HeroSigilData.java:117: 错误: 程序包AchievementT
+racker不存在
+            AchievementTracker.AchievementType achievement = AchievementTracker.AchievementType.values()[i];
+                                                                               ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\HeroSigilData.java:165: 错误: 程序包AchievementT
+racker不存在
+            AchievementTracker.AchievementType achievement = 
+                              ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\HeroSigilData.java:166: 错误: 程序包AchievementT
+racker不存在
+                AchievementTracker.AchievementType.values()[slotIndex];
+                                  ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\HeroSigilData.java:176: 错误: 不兼容的类型: MobEffe
+ct无法转换为Holder<MobEffect>
+                    player.removeEffect(buff.getMobEffect());
+                                                         ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\HeroSigilData.java:274: 错误: 找不到符号
+        java.util.ArrayList<MobEffectInstance> effects = new java.util.ArrayList<>();
+                            ^
+  符号:   类 MobEffectInstance
+  位置: 类 HeroSigilData
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\HeroSigilData.java:279: 错误: 找不到符号
+                MobEffectInstance existingEffect = player.getEffect(buff.getMobEffect());
+                ^
+  符号:   类 MobEffectInstance
+  位置: 类 HeroSigilData
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\HeroSigilData.java:279: 错误: 不兼容的类型: MobEffe
+ct无法转换为Holder<MobEffect>
+                MobEffectInstance existingEffect = player.getEffect(buff.getMobEffect());
+                                                                                     ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\HeroSigilData.java:351: 错误: 找不到符号
+                MobEffectInstance currentEffect = player.getEffect(buff.getMobEffect());
+                ^
+  符号:   类 MobEffectInstance
+  位置: 类 HeroSigilData
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\HeroSigilData.java:351: 错误: 不兼容的类型: MobEffe
+ct无法转换为Holder<MobEffect>
+                MobEffectInstance currentEffect = player.getEffect(buff.getMobEffect());
+                                                                                    ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\HeroSigilData.java:415: 错误: 找不到符号
+            MobEffectInstance currentEffect = !player.level().isClientSide() ? 
+            ^
+  符号:   类 MobEffectInstance
+  位置: 类 HeroSigilData
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\buffs\HeroSigilData.java:416: 错误: 不兼容的类型: MobEffe
+ct无法转换为Holder<MobEffect>
+                player.getEffect(buff.getMobEffect()) : null;
+                                                  ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:18: 错误: HeroSigilMenu
+不是抽象的, 并且未覆盖AbstractContainerMenu中的抽象方法quickMoveStack(Player,int)
+public class HeroSigilMenu extends AbstractContainerMenu {
+       ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:33: 错误: 找不到符号
+        this(pContainerId, pPlayerInventory, data.readItem());
+                                                 ^
+  符号:   方法 readItem()
+  位置: 类型为FriendlyByteBuf的变量 data
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:44: 错误: 找不到符号
+        int playerInvStartY = this.imageHeight - 96 + 4;
+                                  ^
+  符号: 变量 imageHeight
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:81: 错误: 不兼容的类型: HeroS
+igilMenu无法转换为ContainerLevelAccess
+        return stillValid(this, pPlayer, ModRegistries.HERO_SIGIL_MENU.get());
+                          ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:87: 错误: 方法不会覆盖或实现超类型的
+方法
+    @Override
+    ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:89: 错误: 找不到符号
+        return super.quickCraft(pSlotId, pMouseButton, pClickTypeCount, pPlayer);
+                    ^
+  符号: 方法 quickCraft(int,int,int,Player)
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:95: 错误: 方法不会覆盖或实现超类型的
+方法
+    @Override
+    ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:97: 错误: 找不到符号
+        return super.quickMove(pPlayer, pIndex);
+                    ^
+  符号: 方法 quickMove(Player,int)
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:106: 错误: 找不到符号
+            case BUFF_SLOT_1: return this.sigilStack.getOrCreateTag().getInt("buff_slot_1_unlocked") == 1;
+                                                    ^
+  符号:   方法 getOrCreateTag()
+  位置: 类型为ItemStack的变量 sigilStack
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:107: 错误: 找不到符号
+            case BUFF_SLOT_2: return this.sigilStack.getOrCreateTag().getInt("buff_slot_2_unlocked") == 1;
+                                                    ^
+  符号:   方法 getOrCreateTag()
+  位置: 类型为ItemStack的变量 sigilStack
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:108: 错误: 找不到符号
+            case BUFF_SLOT_3: return this.sigilStack.getOrCreateTag().getInt("buff_slot_3_unlocked") == 1;
+                                                    ^
+  符号:   方法 getOrCreateTag()
+  位置: 类型为ItemStack的变量 sigilStack
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:119: 错误: 找不到符号
+            case BUFF_SLOT_1: return this.sigilStack.getOrCreateTag().getInt("buff_slot_1_active");
+                                                    ^
+  符号:   方法 getOrCreateTag()
+  位置: 类型为ItemStack的变量 sigilStack
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:120: 错误: 找不到符号
+            case BUFF_SLOT_2: return this.sigilStack.getOrCreateTag().getInt("buff_slot_2_active");
+                                                    ^
+  符号:   方法 getOrCreateTag()
+  位置: 类型为ItemStack的变量 sigilStack
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:121: 错误: 找不到符号
+            case BUFF_SLOT_3: return this.sigilStack.getOrCreateTag().getInt("buff_slot_3_active");
+                                                    ^
+  符号:   方法 getOrCreateTag()
+  位置: 类型为ItemStack的变量 sigilStack
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:130: 错误: 方法不会覆盖或实现超类型
+的方法
+        @Override
+        ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\menu\HeroSigilMenu.java:33: 错误: 递归构造器调用
+        this(pContainerId, pPlayerInventory, data.readItem());
+        ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\screen\HeroSigilScreen.java:20: 错误: HeroSigil
+Screen不是抽象的, 并且未覆盖AbstractContainerScreen中的抽象方法renderBg(GuiGraphics,float,int,int)
+public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
+       ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\screen\HeroSigilScreen.java:99: 错误: 找不到符号
+            closeButton.setPos(this.width / 2 - 50, this.height - 30);
+                       ^
+  符号:   方法 setPos(int,int)
+  位置: 类型为Button的变量 closeButton
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\screen\HeroSigilScreen.java:103: 错误: 方法不会覆盖或实
+现超类型的方法
+    @Override
+    ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:14: 错误: BuffSlotWi
+dget不是抽象的, 并且未覆盖AbstractButton中的抽象方法onPress()
+public class BuffSlotWidget extends AbstractButton {
+       ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:32: 错误: 找不到符号
+                net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK_PRESS, 
+                                                ^
+  符号:   变量 UI_BUTTON_CLICK_PRESS
+  位置: 类 SoundEvents
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:31: 错误: 找不到符号
+            Minecraft.getInstance().getSoundSource().play(
+                                   ^
+  符号:   方法 getSoundSource()
+  位置: 类 Minecraft
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:33: 错误: 找不到符号
+                net.minecraft.client.resources.sounds.SimpleSoundInstance.defaultVolume()
+                                                                         ^
+  符号:   方法 defaultVolume()
+  位置: 类 SimpleSoundInstance
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:45: 错误: 找不到符号
+                net.neoforged.neoforge.network.NetworkHooks.sendToServer(packet);
+                                              ^
+  符号:   类 NetworkHooks
+  位置: 程序包 net.neoforged.neoforge.network
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:51: 错误: 找不到符号
+                net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK_RELEASE, 
+                                                ^
+  符号:   变量 UI_BUTTON_CLICK_RELEASE
+  位置: 类 SoundEvents
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:50: 错误: 找不到符号
+            Minecraft.getInstance().getSoundSource().play(
+                                   ^
+  符号:   方法 getSoundSource()
+  位置: 类 Minecraft
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:52: 错误: 找不到符号
+                net.minecraft.client.resources.sounds.SimpleSoundInstance.defaultVolume()
+                                                                         ^
+  符号:   方法 defaultVolume()
+  位置: 类 SimpleSoundInstance
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:64: 错误: 找不到符号
+                net.neoforged.neoforge.network.NetworkHooks.sendToServer(packet);
+                                              ^
+  符号:   类 NetworkHooks
+  位置: 程序包 net.neoforged.neoforge.network
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:92: 错误: 找不到符号
+                guiGraphics.strokeLine(this.getX(), this.getY(), 
+                           ^
+  符号:   方法 strokeLine(int,int,int,int,int)
+  位置: 类型为GuiGraphics的变量 guiGraphics
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:107: 错误: 找不到符号
+            guiGraphics.strokeLine(centerX - size, centerY - size, 
+                       ^
+  符号:   方法 strokeLine(int,int,int,int,int)
+  位置: 类型为GuiGraphics的变量 guiGraphics
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:110: 错误: 找不到符号
+            guiGraphics.strokeLine(centerX + size, centerY - size, 
+                       ^
+  符号:   方法 strokeLine(int,int,int,int,int)
+  位置: 类型为GuiGraphics的变量 guiGraphics
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:117: 错误: 找不到符号
+        guiGraphics.strokeLine(this.getX(), this.getY(), 
+                   ^
+  符号:   方法 strokeLine(int,int,int,int,int)
+  位置: 类型为GuiGraphics的变量 guiGraphics
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:120: 错误: 找不到符号
+        guiGraphics.strokeLine(this.getX(), this.getY() + this.getHeight(), 
+                   ^
+  符号:   方法 strokeLine(int,int,int,int,int)
+  位置: 类型为GuiGraphics的变量 guiGraphics
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:123: 错误: 找不到符号
+        guiGraphics.strokeLine(this.getX(), this.getY(), 
+                   ^
+  符号:   方法 strokeLine(int,int,int,int,int)
+  位置: 类型为GuiGraphics的变量 guiGraphics
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:126: 错误: 找不到符号
+        guiGraphics.strokeLine(this.getX() + this.getWidth(), this.getY(), 
+                   ^
+  符号:   方法 strokeLine(int,int,int,int,int)
+  位置: 类型为GuiGraphics的变量 guiGraphics
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:147: 错误: 找不到符号
+                    this.getTooltip().getVisualOrder(), 
+                                     ^
+  符号:   方法 getVisualOrder()
+  位置: 类 Tooltip
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:169: 错误: 找不到符号
+            guiGraphics.fillCircle(centerX, centerY, radius + 1, 
+                       ^
+  符号:   方法 fillCircle(int,int,int,int)
+  位置: 类型为GuiGraphics的变量 guiGraphics
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:174: 错误: 找不到符号
+            guiGraphics.fillCircle(centerX, centerY, radius - 1, 
+                       ^
+  符号:   方法 fillCircle(int,int,int,int)
+  位置: 类型为GuiGraphics的变量 guiGraphics
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:179: 错误: 找不到符号
+            if (!minecraft.level().isClientSide()) {
+                          ^
+  符号:   方法 level()
+  位置: 类型为Minecraft的变量 minecraft
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:189: 错误: 找不到符号
+                centerY - minecraft.font.height("") / 2 + 1, 
+                                        ^
+  符号:   方法 height(String)
+  位置: 类型为Font的变量 font
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:236: 错误: 找不到符号
+                baseComponent.getVisualOrder(), 
+                             ^
+  符号:   方法 getVisualOrder()
+  位置: 类型为Component的变量 baseComponent
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:253: 错误: 找不到符号
+                com.hero.sigil.achievement.AchievementType achievement = achievements[this.slotId];
+                                          ^
+  符号:   类 AchievementType
+  位置: 程序包 com.hero.sigil.achievement
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:295: 错误: 方法不会覆盖或实现
+超类型的方法
+    @Override
+    ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:297: 错误: 找不到符号
+        return super.getNarration();
+                    ^
+  符号: 方法 getNarration()
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:331: 错误: 找不到符号
+                    net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK_PRESS, 
+                                                    ^
+  符号:   变量 UI_BUTTON_CLICK_PRESS
+  位置: 类 SoundEvents
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:330: 错误: 找不到符号
+                minecraft.getSoundSource().play(
+                         ^
+  符号:   方法 getSoundSource()
+  位置: 类型为Minecraft的变量 minecraft
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:332: 错误: 找不到符号
+                    net.minecraft.client.resources.sounds.SimpleSoundInstance.defaultVolume()
+                                                                             ^
+  符号:   方法 defaultVolume()
+  位置: 类 SimpleSoundInstance
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:336: 错误: 找不到符号
+                    net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK_RELEASE, 
+                                                    ^
+  符号:   变量 UI_BUTTON_CLICK_RELEASE
+  位置: 类 SoundEvents
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:335: 错误: 找不到符号
+                minecraft.getSoundSource().play(
+                         ^
+  符号:   方法 getSoundSource()
+  位置: 类型为Minecraft的变量 minecraft
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:337: 错误: 找不到符号
+                    net.minecraft.client.resources.sounds.SimpleSoundInstance.defaultVolume()
+                                                                             ^
+  符号:   方法 defaultVolume()
+  位置: 类 SimpleSoundInstance
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\gui\widget\BuffSlotWidget.java:357: 错误: 找不到符号
+                getTooltip().getVisualOrder(), 
+                            ^
+  符号:   方法 getVisualOrder()
+  位置: 类 Tooltip
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\HeroSigil.java:34: 错误: 找不到符号
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_MODE_TAB = CREATIVE_MODE_TABS.registe
+r(
+                                                                                             ^
+  符号:   变量 CREATIVE_MODE_TABS
+  位置: 类 HeroSigil
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\HeroSigil.java:38: 错误: 程序包ModRegistries不存在
+            .icon(() -> ModRegistries.HERO_SIGIL.get().getDefaultInstance())
+                                     ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\HeroSigil.java:40: 错误: 程序包ModRegistries不存在
+                output.accept(ModRegistries.HERO_SIGIL.get());
+                                           ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\network\BuffSlotSyncPacket.java:12: 警告: [removal]
+ EventBusSubscriber 中的 bus() 已过时, 且标记为待删除
+@EventBusSubscriber(modid = "herosigil", bus = EventBusSubscriber.Bus.GAME)
+                                         ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\network\BuffSlotSyncPacket.java:12: 警告: [removal]
+ EventBusSubscriber 中的 Bus 已过时, 且标记为待删除
+@EventBusSubscriber(modid = "herosigil", bus = EventBusSubscriber.Bus.GAME)
+                                                                 ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\network\HeroSigilNetworkManager.java:12: 警告: [rem
+oval] EventBusSubscriber 中的 bus() 已过时, 且标记为待删除
+@EventBusSubscriber(modid = HeroSigil.MODID, bus = EventBusSubscriber.Bus.GAME)
+                                             ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\network\HeroSigilNetworkManager.java:12: 警告: [rem
+oval] EventBusSubscriber 中的 Bus 已过时, 且标记为待删除
+@EventBusSubscriber(modid = HeroSigil.MODID, bus = EventBusSubscriber.Bus.GAME)
+                                                                     ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\persistence\CapabilityEvents.java:11: 警告: [remova
+l] EventBusSubscriber 中的 bus() 已过时, 且标记为待删除
+@EventBusSubscriber(modid = "herosigil", bus = EventBusSubscriber.Bus.GAME)
+                                         ^
+C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\persistence\CapabilityEvents.java:11: 警告: [remova
+l] EventBusSubscriber 中的 Bus 已过时, 且标记为待删除
+@EventBusSubscriber(modid = "herosigil", bus = EventBusSubscriber.Bus.GAME)
+                                                                 ^
+注: 某些消息已经过简化; 请使用 -Xdiags:verbose 重新编译以获得完整输出
+100 个错误
+8 个警告
+
+> Task :compileJava FAILED
+
+[Incubating] Problems report is available at: file:///C:/Users/shuiy/Desktop/CodeSYD/HeroSigil/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileJava'.
+> Compilation failed; see the compiler output below.
+  C:\Users\shuiy\Desktop\CodeSYD\HeroSigil\src\main\java\com\hero\sigil\achievement\AchievementTracker.java:7: 错误: 找不到符
+号
+  import net.minecraft.world.entity.boss.BossDisplayData;
+                                        ^
+    符号:   类 BossDisplayData
+    位置: 程序包 net.minecraft.world.entity.boss
+  100 个错误
+  8 个警告
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to generate a Build Scan (powered by Develocity).
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 26s
+28 actionable tasks: 1 executed, 27 up-to-date
+Configuration cache entry stored.

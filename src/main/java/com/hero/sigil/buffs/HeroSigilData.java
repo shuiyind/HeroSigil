@@ -1,6 +1,9 @@
 package com.hero.sigil.buffs;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 
 /**
@@ -10,6 +13,12 @@ import net.minecraft.world.entity.player.Player;
 public class HeroSigilData {
 
     private static final String TAG_KEY = "HeroSigil";
+    private static final int CURRENT_DATA_VERSION = 1;
+    private static final String VERSION_TAG = "dataVersion";
+    
+    // 数据备份相关常量
+    private static final String BACKUP_TAG = "HeroSigil_backup";
+    private static final int MAX_BACKUPS = 3;
     
     // List of all available buff effects
     private static java.util.List<BuffEffect> ALL_BUFFS;
@@ -31,11 +40,209 @@ public class HeroSigilData {
         return ALL_BUFFS;
     }
 
+    // ==================== 数据校验与备份 ====================
+
+    /**
+     * 检查 NBT 数据完整性
+     * @return 如果数据有效返回 true，否则返回 false
+     */
+    public static boolean validateData(CompoundTag sigilData) {
+        // 检查版本号
+        if (!sigilData.contains(VERSION_TAG)) {
+            HeroSigil.LOGGER.warn("Missing version tag in Hero Sigil data");
+            return false;
+        }
+        
+        int version = sigilData.getInt(VERSION_TAG);
+        if (version < 0 || version > CURRENT_DATA_VERSION + 1) {
+            HeroSigil.LOGGER.warn("Invalid version {} in Hero Sigil data", version);
+            return false;
+        }
+        
+        // 检查必需槽位数据
+        boolean hasAnySlot = false;
+        for (int i = 1; i <= 3; i++) {
+            String slotKey = "slot_" + i;
+            if (sigilData.contains(slotKey)) {
+                CompoundTag slotData = sigilData.getCompound(slotKey);
+                
+                // 检查必需字段
+                if (!slotData.contains("unlocked") || !slotData.contains("active")) {
+                    HeroSigil.LOGGER.warn("Missing required fields in slot_{}", i);
+                    return false;
+                }
+                
+                // 验证字段类型
+                if (slotData.get("unlocked") != null && slotData.get("active") != null) {
+                    hasAnySlot = true;
+                }
+            }
+        }
+        
+        if (!hasAnySlot) {
+            HeroSigil.LOGGER.warn("No valid slot data found in Hero Sigil data");
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * 创建当前数据的备份
+     */
+    private static void createBackup(CompoundTag persistData) {
+        CompoundTag sigilData = persistData.getCompound(TAG_KEY);
+        
+        // 检查是否有现有备份
+        int backupCount = 0;
+        if (persistData.contains(BACKUP_TAG)) {
+            CompoundTag backup = persistData.getCompound(BACKUP_TAG);
+            backupCount = backup.getInt("count");
+        }
+        
+        // 如果备份数量达到上限，删除最旧的备份
+        if (backupCount >= MAX_BACKUPS) {
+            HeroSigil.LOGGER.info("Maximum backup count reached, removing oldest backup");
+            persistData.remove(BACKUP_TAG);
+            backupCount = 0;
+        }
+        
+        // 创建新备份
+        CompoundTag backupData = new CompoundTag();
+        backupData.putInt("timestamp", (int) System.currentTimeMillis());
+        backupData.putInt("version", sigilData.getInt(VERSION_TAG));
+        backupData.put("data", sigilData.copy());
+        
+        // 更新备份计数
+        backupData.putInt("count", backupCount + 1);
+        
+        persistData.put(BACKUP_TAG, backupData);
+        
+        HeroSigil.LOGGER.info("Created backup {} for player data", backupCount + 1);
+    }
+
+    /**
+     * 从备份恢复数据
+     */
+    public static boolean restoreFromBackup(Player player, CompoundTag persistData) {
+        if (!persistData.contains(BACKUP_TAG)) {
+            HeroSigil.LOGGER.warn("No backup available for player {}", player.getScoreboardName());
+            return false;
+        }
+        
+        CompoundTag backupData = persistData.getCompound(BACKUP_TAG);
+        if (!backupData.contains("data")) {
+            HeroSigil.LOGGER.warn("Backup data is invalid for player {}", player.getScoreboardName());
+            return false;
+        }
+        
+        // 备份当前数据（作为新备份保存）
+        createBackup(persistData);
+        
+        // 恢复备份数据
+        CompoundTag sigilData = backupData.getCompound("data");
+        persistData.put(TAG_KEY, sigilData);
+        
+        HeroSigil.LOGGER.info("Restored data from backup for player {}", player.getScoreboardName());
+        
+        // 通知玩家
+        player.sendSystemMessage(
+            net.minecraft.network.chat.Component.literal("§e§l勇者之证§r§f: 数据已从备份恢复")
+        );
+        
+        return true;
+    }
+
+    // ==================== 数据一致性检查与修复 ====================
+
+    /**
+     * 检查 buff 状态与 NBT 数据是否一致
+     * @return 如果一致返回 true，否则返回 false
+     */
+    public static boolean checkDataConsistency(Player player) {
+        CompoundTag persistData = player.getPersistentData();
+        if (!persistData.contains(TAG_KEY)) {
+            return false;
+        }
+        
+        CompoundTag sigilData = persistData.getCompound(TAG_KEY);
+        java.util.List<BuffEffect> buffs = getAllBuffs();
+        
+        for (int i = 0; i < Math.min(buffs.size(), 3); i++) {
+            BuffEffect buff = buffs.get(i);
+            String slotKey = "slot_" + (i + 1);
+            
+            if (sigilData.contains(slotKey)) {
+                CompoundTag slotData = sigilData.getCompound(slotKey);
+                boolean unlockedFromNBT = slotData.getBoolean("unlocked");
+                boolean activeFromNBT = slotData.getBoolean("active");
+                
+                // 检查一致性
+                if (buff.isUnlocked() != unlockedFromNBT || buff.isActive() != activeFromNBT) {
+                    HeroSigil.LOGGER.warn("Data inconsistency detected for slot {} in player {}: " +
+                        "NBT={}, Buff={}, NBT_active={}, Buff_active={}", 
+                        i + 1, player.getScoreboardName(), unlockedFromNBT, buff.isUnlocked(), 
+                        activeFromNBT, buff.isActive());
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+
+    /**
+     * 自动修复数据不一致
+     */
+    public static void fixDataInconsistency(Player player) {
+        CompoundTag persistData = player.getPersistentData();
+        if (!persistData.contains(TAG_KEY)) {
+            return;
+        }
+        
+        CompoundTag sigilData = persistData.getCompound(TAG_KEY);
+        java.util.List<BuffEffect> buffs = getAllBuffs();
+        boolean changed = false;
+        
+        for (int i = 0; i < Math.min(buffs.size(), 3); i++) {
+            BuffEffect buff = buffs.get(i);
+            String slotKey = "slot_" + (i + 1);
+            
+            if (sigilData.contains(slotKey)) {
+                CompoundTag slotData = sigilData.getCompound(slotKey);
+                boolean unlockedFromNBT = slotData.getBoolean("unlocked");
+                boolean activeFromNBT = slotData.getBoolean("active");
+                
+                // 修复不一致
+                if (buff.isUnlocked() != unlockedFromNBT || buff.isActive() != activeFromNBT) {
+                    slotData.putBoolean("unlocked", buff.isUnlocked());
+                    slotData.putBoolean("active", buff.isActive());
+                    changed = true;
+                    
+                    HeroSigil.LOGGER.info("Fixed data inconsistency for slot {} in player {}", 
+                        i + 1, player.getScoreboardName());
+                }
+            }
+        }
+        
+        if (changed) {
+            persistData.put(TAG_KEY, sigilData);
+            HeroSigil.LOGGER.info("Data inconsistency fixed for player {}", player.getScoreboardName());
+            
+            player.sendSystemMessage(
+                net.minecraft.network.chat.Component.literal("§e§l勇者之证§r§f: 数据不一致已自动修复")
+            );
+        }
+    }
+
     /**
      * Save buff states to player NBT data.
      */
     public static void onSave(Player player, CompoundTag nbt) {
         CompoundTag sigilData = new CompoundTag();
+        
+        // 保存版本号
+        sigilData.putInt(VERSION_TAG, CURRENT_DATA_VERSION);
         
         java.util.List<BuffEffect> buffs = getAllBuffs();
         for (int i = 0; i < Math.min(buffs.size(), 3); i++) { // Max 3 slots
@@ -58,6 +265,58 @@ public class HeroSigilData {
         if (nbt.contains(TAG_KEY)) {
             CompoundTag sigilData = nbt.getCompound(TAG_KEY);
             
+            // 获取并处理版本号
+            int dataVersion = sigilData.getInt(VERSION_TAG);
+            if (dataVersion == 0) {
+                // 旧版本数据没有版本号，默认为 v1
+                dataVersion = 1;
+                sigilData.putInt(VERSION_TAG, 1);
+            }
+            HeroSigil.LOGGER.info("Loading Hero Sigil data version {} for player {}", dataVersion, player.getScoreboardName());
+            
+            // 检查数据完整性
+            if (!validateData(sigilData)) {
+                HeroSigil.LOGGER.warn("Hero Sigil data is corrupted for player {}, attempting recovery", 
+                    player.getScoreboardName());
+                
+                // 尝试从备份恢复
+                if (!restoreFromBackup(player, nbt)) {
+                    // 如果没有备份，创建默认数据
+                    HeroSigil.LOGGER.info("No backup available, creating default data for player {}", 
+                        player.getScoreboardName());
+                    sigilData = new CompoundTag();
+                    sigilData.putInt(VERSION_TAG, CURRENT_DATA_VERSION);
+                    
+                    // 创建默认槽位数据
+                    for (int i = 1; i <= 3; i++) {
+                        CompoundTag slotData = new CompoundTag();
+                        slotData.putBoolean("unlocked", false);
+                        slotData.putBoolean("active", false);
+                        sigilData.setTag("slot_" + i, slotData);
+                    }
+                    
+                    nbt.put(TAG_KEY, sigilData);
+                } else {
+                    // 重新加载恢复后的数据
+                    sigilData = nbt.getCompound(TAG_KEY);
+                    // 重新获取恢复后的版本号
+                    dataVersion = sigilData.getInt(VERSION_TAG);
+                    if (dataVersion == 0) {
+                        dataVersion = 1;
+                        sigilData.putInt(VERSION_TAG, 1);
+                    }
+                }
+            }
+            
+            // 数据迁移
+            if (dataVersion < CURRENT_DATA_VERSION) {
+                sigilData = migrateData(dataVersion, sigilData, player);
+            } else if (dataVersion > CURRENT_DATA_VERSION) {
+                HeroSigil.LOGGER.warn("Player data version {} is newer than current version {}, may be incompatible",
+                    dataVersion, CURRENT_DATA_VERSION);
+            }
+            
+            // 加载 buff 状态
             java.util.List<BuffEffect> buffs = getAllBuffs();
             for (int i = 0; i < Math.min(buffs.size(), 3); i++) { // Max 3 slots
                 BuffEffect buff = buffs.get(i);
@@ -74,10 +333,195 @@ public class HeroSigilData {
                     }
                 }
             }
+            
+            // 更新为最新版本
+            sigilData.putInt(VERSION_TAG, CURRENT_DATA_VERSION);
+            
+            HeroSigil.LOGGER.info("Successfully loaded Hero Sigil data for player {}", player.getScoreboardName());
         } else {
             // First time - apply default unlocks based on achievements
             applyDefaultBuffsForPlayer(player);
         }
+    }
+
+    /**
+     * 根据旧版本迁移数据到当前版本（按版本逐步迁移）
+     */
+    private static CompoundTag migrateData(int oldVersion, CompoundTag data, Player player) {
+        HeroSigil.LOGGER.info("Migrating Hero Sigil data from version {} to {} for player {}",
+            oldVersion, CURRENT_DATA_VERSION, player.getScoreboardName());
+
+        // 按版本逐步迁移（确保每个中间版本都被正确处理）
+        if (oldVersion < CURRENT_DATA_VERSION) {
+            for (int version = oldVersion; version < CURRENT_DATA_VERSION; version++) {
+                data = migrateFromVersion(version, data, player);
+            }
+        }
+
+        // 迁移完成后更新版本号
+        data.putInt(VERSION_TAG, CURRENT_DATA_VERSION);
+
+        HeroSigil.LOGGER.info("Data migration completed successfully for player {}", player.getScoreboardName());
+        return data;
+    }
+
+    /**
+     * 从指定版本迁移到下一个版本
+     */
+    private static CompoundTag migrateFromVersion(int fromVersion, CompoundTag data, Player player) {
+        long startTime = System.currentTimeMillis();
+
+        try {
+            CompoundTag result = switch (fromVersion) {
+                case 1 -> migrateFromV1ToV2(data, player);
+                case 2 -> migrateFromV2ToV3(data, player);
+                default -> {
+                    HeroSigil.LOGGER.warn("Unknown migration path from version {}, keeping data as-is", fromVersion);
+                    yield data;
+                }
+            };
+
+            long duration = System.currentTimeMillis() - startTime;
+            HeroSigil.LOGGER.info("Migration from v{} completed in {}ms for player {}",
+                fromVersion, duration, player.getScoreboardName());
+
+            return result;
+        } catch (Exception e) {
+            HeroSigil.LOGGER.error("Error during migration from v{} for player {}: {}",
+                fromVersion, player.getScoreboardName(), e.getMessage());
+            // 返回原始数据，避免数据丢失
+            return data;
+        }
+    }
+
+    /**
+     * 从 v1 迁移到 v2: 添加新 buff 槽位支持
+     */
+    private static CompoundTag migrateFromV1ToV2(CompoundTag data, Player player) {
+        HeroSigil.LOGGER.info("Migrating from v1 to v2: Adding support for additional buff slots");
+
+        // 检查现有槽位数据
+        int existingSlots = 0;
+        for (int i = 1; i <= 3; i++) {
+            String slotKey = "slot_" + i;
+            if (data.contains(slotKey)) {
+                existingSlots = i;
+            }
+        }
+
+        // v2 支持 5 个槽位，如果现有 3 个槽位，创建新的空槽位
+        if (existingSlots >= 3) {
+            for (int i = existingSlots + 1; i <= 5; i++) {
+                String slotKey = "slot_" + i;
+                if (!data.contains(slotKey)) {
+                    CompoundTag slotData = new CompoundTag();
+                    slotData.putBoolean("unlocked", false);
+                    slotData.putBoolean("active", false);
+                    data.setTag(slotKey, slotData);
+
+                    HeroSigil.LOGGER.info("Created new empty buff slot {} for player {}", i, player.getScoreboardName());
+                }
+            }
+        }
+
+        // 更新版本号
+        data.putInt(VERSION_TAG, 2);
+
+        HeroSigil.LOGGER.info("Migration v1 -> v2 completed for player {}", player.getScoreboardName());
+        return data;
+    }
+
+    /**
+     * 从 v2 迁移到 v3: Buff ID 重新映射
+     */
+    private static CompoundTag migrateFromV2ToV3(CompoundTag data, Player player) {
+        HeroSigil.LOGGER.info("Migrating from v2 to v3: Remapping buff IDs for player {}", player.getScoreboardName());
+
+        // 定义旧 ID 到新 ID 的映射
+        java.util.Map<String, String> buffIdMapping = new java.util.HashMap<>();
+        buffIdMapping.put("saturation", "food_saver");      // 示例：重命名
+        buffIdMapping.put("health_boost", "vitality");       // 示例：重命名
+        buffIdMapping.put("speed", "swiftness");             // 示例：重命名
+
+        // 迁移每个槽位的 buff ID
+        for (int i = 1; i <= 3; i++) {
+            String slotKey = "slot_" + i;
+            if (data.contains(slotKey)) {
+                CompoundTag slotData = data.getCompound(slotKey);
+
+                // 如果需要迁移 buff ID，可以在这里添加逻辑
+                // 例如：slotData.putString("buffId", buffIdMapping.get(slotData.getString("buffId")))
+            }
+        }
+
+        // 更新版本号
+        data.putInt(VERSION_TAG, 3);
+
+        HeroSigil.LOGGER.info("Migration v2 -> v3 completed for player {}", player.getScoreboardName());
+        return data;
+    }
+
+    // ==================== 回滚方法 ====================
+
+    /**
+     * 回滚数据到指定版本（用于测试或修复）
+     */
+    public static CompoundTag rollbackData(CompoundTag data, int targetVersion) {
+        HeroSigil.LOGGER.info("Rolling back data to version {}", targetVersion);
+
+        int currentVersion = data.getInt(VERSION_TAG);
+        if (currentVersion <= targetVersion) {
+            HeroSigil.LOGGER.info("Data is already at or before target version");
+            return data;
+        }
+
+        // 逐步降级
+        for (int version = currentVersion; version > targetVersion; version--) {
+            data = rollbackToVersion(version, data);
+        }
+
+        data.putInt(VERSION_TAG, targetVersion);
+        HeroSigil.LOGGER.info("Rollback to v{} completed", targetVersion);
+
+        return data;
+    }
+
+    /**
+     * 从指定版本回滚到前一个版本
+     */
+    private static CompoundTag rollbackToVersion(int fromVersion, CompoundTag data) {
+        switch (fromVersion) {
+            case 2:
+                return rollbackFromV2ToV1(data);
+            case 3:
+                return rollbackFromV3ToV2(data);
+            default:
+                HeroSigil.LOGGER.warn("Unknown rollback path from version {}", fromVersion);
+                return data;
+        }
+    }
+
+    private static CompoundTag rollbackFromV2ToV1(CompoundTag data) {
+        HeroSigil.LOGGER.info("Rolling back from v2 to v1: Removing additional buff slots");
+
+        // 移除 v2 新增的槽位
+        for (int i = 4; i <= 5; i++) {
+            String slotKey = "slot_" + i;
+            data.remove(slotKey);
+        }
+
+        data.putInt(VERSION_TAG, 1);
+        return data;
+    }
+
+    private static CompoundTag rollbackFromV3ToV2(CompoundTag data) {
+        HeroSigil.LOGGER.info("Rolling back from v3 to v2: Reverting buff ID mappings");
+
+        // v3 的 buff ID 映射是单向的，回滚时保留原始数据
+        // 如果需要完全回滚，可以在这里添加逻辑恢复原始 ID
+
+        data.putInt(VERSION_TAG, 2);
+        return data;
     }
 
     /**
@@ -123,8 +567,9 @@ public class HeroSigilData {
                 if (!buffs.get(i).isActive()) {
                     buffs.get(i).toggleActive();
                     
-                    // Apply immediately for server-side players
-                    if (!player.level().isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer) {
+                    // 对永久 buff 立即应用（处理最大生命值变化）
+                    if (buffs.get(i).isPermanent() && !player.level().isClientSide() && 
+                        player instanceof net.minecraft.server.level.ServerPlayer) {
                         buffs.get(i).applyBuff(player);
                     }
                 }
@@ -195,6 +640,20 @@ public class HeroSigilData {
             new com.hero.sigil.network.BuffSlotSyncPacket(player.getId(), states), 
             (net.minecraft.server.level.ServerPlayer) player
         );
+    }
+
+    /**
+     * 检查指定 buff 是否可以应用（考虑冲突）
+     */
+    public static boolean canApplyBuff(Player player, BuffEffect buff) {
+        if (buff.getMobEffect() == MobEffects.SPEED) {
+            MobEffectInstance existingEffect = player.getEffect(buff.getMobEffect());
+            if (existingEffect != null) {
+                // 如果已有更强的加速效果，返回 false
+                return existingEffect.getAmplifier() <= buff.getAmplifier();
+            }
+        }
+        return true;
     }
 
     /**

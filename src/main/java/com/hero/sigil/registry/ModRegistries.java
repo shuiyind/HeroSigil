@@ -3,16 +3,43 @@ package com.hero.sigil.registry;
 import com.hero.sigil.HeroSigil;
 import com.hero.sigil.gui.menu.HeroSigilMenu;
 import com.hero.sigil.item.HeroSigilItem;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItems;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
  * Central registry for all Hero Sigil mod objects.
  */
 public class ModRegistries {
+
+    /**
+     * Deferred Register for Sound Events.
+     */
+    public static final DeferredRegister<SoundEvent> SOUND_EVENTS = 
+        DeferredRegister.create(NeoForgeRegistries.Keys.SOUND_EVENTS, HeroSigil.MODID);
+
+    /**
+     * Buff 音效注册
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> BUFF_UNLOCK = SOUND_EVENTS.register(
+        "buff_unlock",
+        () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(HeroSigil.MODID, "buff_unlock"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> BUFF_ACTIVATE = SOUND_EVENTS.register(
+        "buff_activate",
+        () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(HeroSigil.MODID, "buff_activate"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> BUFF_DEACTIVATE = SOUND_EVENTS.register(
+        "buff_deactivate",
+        () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(HeroSigil.MODID, "buff_deactivate"))
+    );
 
     /**
      * Deferred Register for GUI Menus.
