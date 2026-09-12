@@ -1,5 +1,6 @@
 {
   "item.herosigil.hero_sigil": "勇者之证",
+  "itemGroup.herosigil": "勇者之证",
   "container.herosigil.title": "勇者之证 - Buff 管理",
   "gui.herosigil.close": "关闭",
   
@@ -15,5 +16,18 @@
   "tooltip.herosigil.click_to_activate": "点击来激活此 Buff",
   "tooltip.herosigil.active_status": "%s 已激活",
   "tooltip.herosigil.duration": "持续时间: %d 秒",
-  "tooltip.herosigil.permanent": "永久生效"
+  "tooltip.herosigil.permanent": "永久生效",
+  
+  "achievement.herosigil.defeat_boss": "击败 Boss",
+  "achievement.herosigil.explore_biomes": "探索世界",
+  "achievement.herosigil.defeat_ender_dragon": "击杀末影龙",
+  "achievement.herosigil.build_redstone": "红石工程师",
+  "achievement.herosigil.complete_collection": "收藏大师",
+  
+  "effect.herosigil.saturation": "饱和",
+  "effect.herosigil.saturation.desc": "持续恢复饥饿值",
+  "effect.herosigil.health_boost": "生命提升",
+  "effect.herosigil.health_boost.desc": "增加最大生命值",
+  "effect.herosigil.speed": "速度",
+  "effect.herosigil.speed.desc": "增加移动速度"
 }

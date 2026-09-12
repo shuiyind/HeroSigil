@@ -1,4 +1,4 @@
-package com.hero.sigil.data;
+package com.hero.sigil.persistence;
 
 import net.minecraft.nbt.CompoundTag;
 import net.neoforged.bus.api.SubscribeEvent;

@@ -1,16 +1,16 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    " S ",
+    "SSS",
     "SCS",
-    " S "
+    "SSS"
   ],
   "key": {
     "S": {
       "item": "minecraft:nether_star"
     },
     "C": {
-      "item": "minecraft:chestplate"
+      "tag": "minecraft:armor_chestplates"
     }
   },
   "result": {

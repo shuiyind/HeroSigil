@@ -1,4 +1,4 @@
-package com.hero.sigil.util;
+package com.hero.sigil.client;
 
 import com.hero.sigil.gui.menu.HeroSigilMenu;
 import com.hero.sigil.gui.screen.HeroSigilScreen;

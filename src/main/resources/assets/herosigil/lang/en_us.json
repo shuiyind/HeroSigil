@@ -1,5 +1,6 @@
 {
   "item.herosigil.hero_sigil": "Hero Sigil",
+  "itemGroup.herosigil": "Hero Sigil",
   "container.herosigil.title": "Hero Sigil - Buff Management",
   "gui.herosigil.close": "Close",
   
@@ -15,5 +16,18 @@
   "tooltip.herosigil.click_to_activate": "Click to activate this buff",
   "tooltip.herosigil.active_status": "%s Active",
   "tooltip.herosigil.duration": "Duration: %d seconds",
-  "tooltip.herosigil.permanent": "Permanent effect"
+  "tooltip.herosigil.permanent": "Permanent effect",
+  
+  "achievement.herosigil.defeat_boss": "Defeat a Boss",
+  "achievement.herosigil.explore_biomes": "Explore the World",
+  "achievement.herosigil.defeat_ender_dragon": "Slay the Ender Dragon",
+  "achievement.herosigil.build_redstone": "Redstone Engineer",
+  "achievement.herosigil.complete_collection": "Master Collector",
+  
+  "effect.herosigil.saturation": "Saturation",
+  "effect.herosigil.saturation.desc": "Restores hunger bar continuously",
+  "effect.herosigil.health_boost": "Health Boost",
+  "effect.herosigil.health_boost.desc": "Increases maximum health",
+  "effect.herosigil.speed": "Speed",
+  "effect.herosigil.speed.desc": "Increases movement speed"
 }

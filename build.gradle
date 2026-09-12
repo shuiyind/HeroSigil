@@ -94,6 +94,20 @@ runs {
 // "optional", meaning it will not be pulled by dependents of this mod.
 configurations {
     runtimeClasspath.extendsFrom localRuntime
+    testImplementation.extendsFrom compileOnly
+}
+
+// Configure test source set
+sourceSets {
+    test {
+        java.srcDir 'src/test/java'
+        resources.srcDir 'src/test/resources'
+    }
+}
+
+// Add test task
+test {
+    useJUnitPlatform()
 }
 
 dependencies {
