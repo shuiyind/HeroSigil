@@ -2,6 +2,7 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'net.neoforged.gradle.userdev' version '7.1.38'
+    id 'com.diffplug.spotless' version '6.25.0'
 }
 
 tasks.withType(Wrapper).configureEach {
@@ -35,7 +36,7 @@ base {
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 project.ext {
-    javaVersion = Integer.parseInt(new File(projectDir.parentFile, '.java-version').text.trim())
+    javaVersion = Integer.parseInt(new File(projectDir, '.java-version').text.trim())
 }
 
 //minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
@@ -191,5 +192,16 @@ idea {
     module {
         downloadSources = true
         downloadJavadoc = true
+    }
+}
+
+// Spotless code formatting check
+spotless {
+    java {
+        target 'src/main/java/**/*.java', 'src/test/java/**/*.java'
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+        toggleOffOn()
     }
 }
