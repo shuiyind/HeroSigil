@@ -20,7 +20,7 @@ public class ModRegistries {
     /**
      * Deferred Register for Sound Events.
      */
-    public static final DeferredRegister<SoundEvent> SOUND_EVENTS = 
+    public static final DeferredRegister<SoundEvent> SOUND_EVENTS =
         DeferredRegister.create(NeoForgeRegistries.Keys.SOUND_EVENTS, HeroSigil.MODID);
 
     /**
@@ -44,20 +44,20 @@ public class ModRegistries {
     /**
      * Deferred Register for GUI Menus.
      */
-    public static final DeferredRegister.Menus MENUS = 
+    public static final DeferredRegister.Menus MENUS =
         DeferredRegister.createMenus(HeroSigil.MODID);
 
     /**
      * The main Hero Sigil accessory item.
      * This is the core item that players will equip to unlock buff slots.
      */
-    public static final DeferredItems.DeferredItem<HeroSigilItem> HERO_SIGIL = 
+    public static final DeferredItems.DeferredItem<HeroSigilItem> HERO_SIGIL =
         HeroSigil.ITEMS.register("hero_sigil", HeroSigilItem::new);
 
     /**
      * GUI Menu type for the Hero Sigil inventory screen.
      */
-    public static final DeferredHolder<MenuType<?>, MenuType<HeroSigilMenu>> HERO_SIGIL_MENU = 
+    public static final DeferredHolder<MenuType<?>, MenuType<HeroSigilMenu>> HERO_SIGIL_MENU =
         MENUS.register("herosigil_menu", () -> new MenuType<>(HeroSigilMenu.Factory::new));
 
     /**
@@ -67,7 +67,7 @@ public class ModRegistries {
     public static void init() {
         // Register menus to the event bus
         MENUS.register(HeroSigil.MODID);
-        
+
         // All registrations happen automatically via DeferredRegister
         HeroSigil.LOGGER.info("Hero Sigil registries initialized");
     }

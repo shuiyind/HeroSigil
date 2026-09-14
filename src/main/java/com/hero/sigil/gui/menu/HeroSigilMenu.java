@@ -1,25 +1,23 @@
 package com.hero.sigil.gui.menu;
 
-import com.hero.sigil.HeroSigil;
 import com.hero.sigil.registry.ModRegistries;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 
 /**
  * Container menu for Hero Sigil GUI.
- * 
+ *
  * Manages the item slots and data synchronization between client and server.
  */
 public class HeroSigilMenu extends AbstractContainerMenu {
-    
+
     private final ItemStack sigilStack;
     private final Player player;
-    
+
     // Buff slot indices (will be expanded later)
     public static final int BUFF_SLOT_1 = 0;
     public static final int BUFF_SLOT_2 = 1;
@@ -35,25 +33,25 @@ public class HeroSigilMenu extends AbstractContainerMenu {
 
     public HeroSigilMenu(int pContainerId, Inventory pPlayerInventory, ItemStack pSigilStack) {
         super(ModRegistries.HERO_SIGIL_MENU.get(), pContainerId);
-        
+
         this.sigilStack = pSigilStack;
         this.player = pPlayerInventory.player;
-        
+
         // Setup player inventory slots (standard Minecraft layout)
         int playerInvStartX = 8;
         int playerInvStartY = this.imageHeight - 96 + 4;
-        
+
         // Main inventory rows
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 9; ++j) {
-                this.addSlot(new net.minecraft.world.inventory.Slot(pPlayerInventory, j + i * 9 + 9, 
+                this.addSlot(new net.minecraft.world.inventory.Slot(pPlayerInventory, j + i * 9 + 9,
                     playerInvStartX + j * 18, playerInvStartY + i * 18));
             }
         }
-        
+
         // Hotbar row
         for (int i = 0; i < 9; ++i) {
-            this.addSlot(new net.minecraft.world.inventory.Slot(pPlayerInventory, i, 
+            this.addSlot(new net.minecraft.world.inventory.Slot(pPlayerInventory, i,
                 playerInvStartX + i * 18, playerInvStartY + 58));
         }
     }
@@ -62,7 +60,7 @@ public class HeroSigilMenu extends AbstractContainerMenu {
      * Check if the player has the Hero Sigil equipped.
      */
     public boolean hasSigilEquipped() {
-        return !this.sigilStack.isEmpty() && 
+        return !this.sigilStack.isEmpty() &&
                this.sigilStack.getItem() == ModRegistries.HERO_SIGIL.get();
     }
 

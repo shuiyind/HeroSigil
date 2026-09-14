@@ -11,9 +11,9 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  */
 @EventBusSubscriber(modid = "herosigil", bus = EventBusSubscriber.Bus.GAME)
 public class BuffSlotSyncPacket {
-    
+
     public static final String TYPE_ID = "buff_slot_sync";
-    
+
     private final int playerId;
     private final int[] buffStates;
 
@@ -35,7 +35,7 @@ public class BuffSlotSyncPacket {
      */
     public void toBytes(FriendlyByteBuf pBuffer) {
         pBuffer.writeInt(this.playerId);
-        
+
         for (int i = 0; i < 3; i++) {
             if (i < this.buffStates.length) {
                 pBuffer.writeInt(this.buffStates[i]);
@@ -51,11 +51,11 @@ public class BuffSlotSyncPacket {
     public static BuffSlotSyncPacket fromBytes(FriendlyByteBuf pBuffer) {
         int playerId = pBuffer.readInt();
         int[] buffStates = new int[3];
-        
+
         for (int i = 0; i < 3; i++) {
             buffStates[i] = pBuffer.readInt();
         }
-        
+
         return new BuffSlotSyncPacket(playerId, buffStates);
     }
 
@@ -67,31 +67,31 @@ public class BuffSlotSyncPacket {
         pContext.enqueueWork(() -> {
             updateClientBuffStates(pPacket.playerId, pPacket.buffStates);
         });
-        
+
         // Acknowledge receipt (optional)
     }
 
     private static void updateClientBuffStates(int pPlayerId, int[] pbuffStates) {
         net.minecraft.client.Minecraft minecraft = net.minecraft.client.Minecraft.getInstance();
-        
+
         if (minecraft.player != null && minecraft.player.getId() == pPlayerId) {
             // Update the current player's buff slots in the GUI menu
             if (minecraft.screen instanceof com.hero.sigil.gui.screen.HeroSigilScreen screen) {
                 var menu = screen.getMenu();
-                
+
                 for (int i = 0; i < Math.min(3, pbuffStates.length); i++) {
                     int state = pbuffStates[i];
                     boolean unlocked = (state & 0x1) != 0; // Bit 0: unlocked flag
                     boolean active = (state & 0x2) != 0;   // Bit 1: active flag
-                    
+
                     updateBuffSlotInScreen(screen, i, unlocked, active);
                 }
             }
         }
     }
 
-    private static void updateBuffSlotInScreen(com.hero.sigil.gui.screen.HeroSigilScreen pScreen, 
-                                               int pSlotIndex, boolean pUnlocked, 
+    private static void updateBuffSlotInScreen(com.hero.sigil.gui.screen.HeroSigilScreen pScreen,
+                                               int pSlotIndex, boolean pUnlocked,
                                                boolean pActive) {
         // TODO: Get the specific buff slot widget and update its state
         switch (pSlotIndex) {
@@ -138,10 +138,10 @@ public class BuffSlotSyncPacket {
      */
     public static BuffSlotSyncPacket createForPlayer(net.minecraft.world.entity.player.Player pPlayer) {
         int[] buffStates = new int[3];
-        
+
         // Get buff states from HeroSigilData
         System.arraycopy(com.hero.sigil.buffs.HeroSigilData.getBuffStatesArray(pPlayer), 0, buffStates, 0, Math.min(3, com.hero.sigil.buffs.HeroSigilData.getAllBuffs().size()));
-        
+
         return new BuffSlotSyncPacket(pPlayer.getId(), buffStates);
     }
 

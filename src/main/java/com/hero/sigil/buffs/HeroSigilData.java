@@ -1,7 +1,6 @@
 package com.hero.sigil.buffs;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
@@ -15,14 +14,14 @@ public class HeroSigilData {
     private static final String TAG_KEY = "HeroSigil";
     private static final int CURRENT_DATA_VERSION = 1;
     private static final String VERSION_TAG = "dataVersion";
-    
+
     // 数据备份相关常量
     private static final String BACKUP_TAG = "HeroSigil_backup";
     private static final int MAX_BACKUPS = 3;
-    
+
     // List of all available buff effects
     private static java.util.List<BuffEffect> ALL_BUFFS;
-    
+
     /**
      * Initialize the list of available buff effects.
      */
@@ -52,38 +51,38 @@ public class HeroSigilData {
             HeroSigil.LOGGER.warn("Missing version tag in Hero Sigil data");
             return false;
         }
-        
+
         int version = sigilData.getInt(VERSION_TAG);
         if (version < 0 || version > CURRENT_DATA_VERSION + 1) {
             HeroSigil.LOGGER.warn("Invalid version {} in Hero Sigil data", version);
             return false;
         }
-        
+
         // 检查必需槽位数据
         boolean hasAnySlot = false;
         for (int i = 1; i <= 3; i++) {
             String slotKey = "slot_" + i;
             if (sigilData.contains(slotKey)) {
                 CompoundTag slotData = sigilData.getCompound(slotKey);
-                
+
                 // 检查必需字段
                 if (!slotData.contains("unlocked") || !slotData.contains("active")) {
                     HeroSigil.LOGGER.warn("Missing required fields in slot_{}", i);
                     return false;
                 }
-                
+
                 // 验证字段类型
                 if (slotData.get("unlocked") != null && slotData.get("active") != null) {
                     hasAnySlot = true;
                 }
             }
         }
-        
+
         if (!hasAnySlot) {
             HeroSigil.LOGGER.warn("No valid slot data found in Hero Sigil data");
             return false;
         }
-        
+
         return true;
     }
 
@@ -92,32 +91,32 @@ public class HeroSigilData {
      */
     private static void createBackup(CompoundTag persistData) {
         CompoundTag sigilData = persistData.getCompound(TAG_KEY);
-        
+
         // 检查是否有现有备份
         int backupCount = 0;
         if (persistData.contains(BACKUP_TAG)) {
             CompoundTag backup = persistData.getCompound(BACKUP_TAG);
             backupCount = backup.getInt("count");
         }
-        
+
         // 如果备份数量达到上限，删除最旧的备份
         if (backupCount >= MAX_BACKUPS) {
             HeroSigil.LOGGER.info("Maximum backup count reached, removing oldest backup");
             persistData.remove(BACKUP_TAG);
             backupCount = 0;
         }
-        
+
         // 创建新备份
         CompoundTag backupData = new CompoundTag();
         backupData.putInt("timestamp", (int) System.currentTimeMillis());
         backupData.putInt("version", sigilData.getInt(VERSION_TAG));
         backupData.put("data", sigilData.copy());
-        
+
         // 更新备份计数
         backupData.putInt("count", backupCount + 1);
-        
+
         persistData.put(BACKUP_TAG, backupData);
-        
+
         HeroSigil.LOGGER.info("Created backup {} for player data", backupCount + 1);
     }
 
@@ -129,27 +128,27 @@ public class HeroSigilData {
             HeroSigil.LOGGER.warn("No backup available for player {}", player.getScoreboardName());
             return false;
         }
-        
+
         CompoundTag backupData = persistData.getCompound(BACKUP_TAG);
         if (!backupData.contains("data")) {
             HeroSigil.LOGGER.warn("Backup data is invalid for player {}", player.getScoreboardName());
             return false;
         }
-        
+
         // 备份当前数据（作为新备份保存）
         createBackup(persistData);
-        
+
         // 恢复备份数据
         CompoundTag sigilData = backupData.getCompound("data");
         persistData.put(TAG_KEY, sigilData);
-        
+
         HeroSigil.LOGGER.info("Restored data from backup for player {}", player.getScoreboardName());
-        
+
         // 通知玩家
         player.sendSystemMessage(
             net.minecraft.network.chat.Component.literal("§e§l勇者之证§r§f: 数据已从备份恢复")
         );
-        
+
         return true;
     }
 
@@ -164,30 +163,30 @@ public class HeroSigilData {
         if (!persistData.contains(TAG_KEY)) {
             return false;
         }
-        
+
         CompoundTag sigilData = persistData.getCompound(TAG_KEY);
         java.util.List<BuffEffect> buffs = getAllBuffs();
-        
+
         for (int i = 0; i < Math.min(buffs.size(), 3); i++) {
             BuffEffect buff = buffs.get(i);
             String slotKey = "slot_" + (i + 1);
-            
+
             if (sigilData.contains(slotKey)) {
                 CompoundTag slotData = sigilData.getCompound(slotKey);
                 boolean unlockedFromNBT = slotData.getBoolean("unlocked");
                 boolean activeFromNBT = slotData.getBoolean("active");
-                
+
                 // 检查一致性
                 if (buff.isUnlocked() != unlockedFromNBT || buff.isActive() != activeFromNBT) {
                     HeroSigil.LOGGER.warn("Data inconsistency detected for slot {} in player {}: " +
-                        "NBT={}, Buff={}, NBT_active={}, Buff_active={}", 
-                        i + 1, player.getScoreboardName(), unlockedFromNBT, buff.isUnlocked(), 
+                        "NBT={}, Buff={}, NBT_active={}, Buff_active={}",
+                        i + 1, player.getScoreboardName(), unlockedFromNBT, buff.isUnlocked(),
                         activeFromNBT, buff.isActive());
                     return false;
                 }
             }
         }
-        
+
         return true;
     }
 
@@ -199,36 +198,36 @@ public class HeroSigilData {
         if (!persistData.contains(TAG_KEY)) {
             return;
         }
-        
+
         CompoundTag sigilData = persistData.getCompound(TAG_KEY);
         java.util.List<BuffEffect> buffs = getAllBuffs();
         boolean changed = false;
-        
+
         for (int i = 0; i < Math.min(buffs.size(), 3); i++) {
             BuffEffect buff = buffs.get(i);
             String slotKey = "slot_" + (i + 1);
-            
+
             if (sigilData.contains(slotKey)) {
                 CompoundTag slotData = sigilData.getCompound(slotKey);
                 boolean unlockedFromNBT = slotData.getBoolean("unlocked");
                 boolean activeFromNBT = slotData.getBoolean("active");
-                
+
                 // 修复不一致
                 if (buff.isUnlocked() != unlockedFromNBT || buff.isActive() != activeFromNBT) {
                     slotData.putBoolean("unlocked", buff.isUnlocked());
                     slotData.putBoolean("active", buff.isActive());
                     changed = true;
-                    
-                    HeroSigil.LOGGER.info("Fixed data inconsistency for slot {} in player {}", 
+
+                    HeroSigil.LOGGER.info("Fixed data inconsistency for slot {} in player {}",
                         i + 1, player.getScoreboardName());
                 }
             }
         }
-        
+
         if (changed) {
             persistData.put(TAG_KEY, sigilData);
             HeroSigil.LOGGER.info("Data inconsistency fixed for player {}", player.getScoreboardName());
-            
+
             player.sendSystemMessage(
                 net.minecraft.network.chat.Component.literal("§e§l勇者之证§r§f: 数据不一致已自动修复")
             );
@@ -240,21 +239,21 @@ public class HeroSigilData {
      */
     public static void onSave(Player player, CompoundTag nbt) {
         CompoundTag sigilData = new CompoundTag();
-        
+
         // 保存版本号
         sigilData.putInt(VERSION_TAG, CURRENT_DATA_VERSION);
-        
+
         java.util.List<BuffEffect> buffs = getAllBuffs();
         for (int i = 0; i < Math.min(buffs.size(), 3); i++) { // Max 3 slots
             BuffEffect buff = buffs.get(i);
             String slotKey = "slot_" + (i + 1);
-            
+
             CompoundTag slotData = new CompoundTag();
             slotData.putBoolean("unlocked", buff.isUnlocked());
             slotData.putBoolean("active", buff.isActive());
             sigilData.setTag(slotKey, slotData);
         }
-        
+
         nbt.put(TAG_KEY, sigilData);
     }
 
@@ -264,7 +263,7 @@ public class HeroSigilData {
     public static void onLoad(Player player, CompoundTag nbt) {
         if (nbt.contains(TAG_KEY)) {
             CompoundTag sigilData = nbt.getCompound(TAG_KEY);
-            
+
             // 获取并处理版本号
             int dataVersion = sigilData.getInt(VERSION_TAG);
             if (dataVersion == 0) {
@@ -273,20 +272,20 @@ public class HeroSigilData {
                 sigilData.putInt(VERSION_TAG, 1);
             }
             HeroSigil.LOGGER.info("Loading Hero Sigil data version {} for player {}", dataVersion, player.getScoreboardName());
-            
+
             // 检查数据完整性
             if (!validateData(sigilData)) {
-                HeroSigil.LOGGER.warn("Hero Sigil data is corrupted for player {}, attempting recovery", 
+                HeroSigil.LOGGER.warn("Hero Sigil data is corrupted for player {}, attempting recovery",
                     player.getScoreboardName());
-                
+
                 // 尝试从备份恢复
                 if (!restoreFromBackup(player, nbt)) {
                     // 如果没有备份，创建默认数据
-                    HeroSigil.LOGGER.info("No backup available, creating default data for player {}", 
+                    HeroSigil.LOGGER.info("No backup available, creating default data for player {}",
                         player.getScoreboardName());
                     sigilData = new CompoundTag();
                     sigilData.putInt(VERSION_TAG, CURRENT_DATA_VERSION);
-                    
+
                     // 创建默认槽位数据
                     for (int i = 1; i <= 3; i++) {
                         CompoundTag slotData = new CompoundTag();
@@ -294,7 +293,7 @@ public class HeroSigilData {
                         slotData.putBoolean("active", false);
                         sigilData.setTag("slot_" + i, slotData);
                     }
-                    
+
                     nbt.put(TAG_KEY, sigilData);
                 } else {
                     // 重新加载恢复后的数据
@@ -307,7 +306,7 @@ public class HeroSigilData {
                     }
                 }
             }
-            
+
             // 数据迁移
             if (dataVersion < CURRENT_DATA_VERSION) {
                 sigilData = migrateData(dataVersion, sigilData, player);
@@ -315,28 +314,28 @@ public class HeroSigilData {
                 HeroSigil.LOGGER.warn("Player data version {} is newer than current version {}, may be incompatible",
                     dataVersion, CURRENT_DATA_VERSION);
             }
-            
+
             // 加载 buff 状态
             java.util.List<BuffEffect> buffs = getAllBuffs();
             for (int i = 0; i < Math.min(buffs.size(), 3); i++) { // Max 3 slots
                 BuffEffect buff = buffs.get(i);
                 String slotKey = "slot_" + (i + 1);
-                
+
                 if (sigilData.contains(slotKey)) {
                     CompoundTag slotData = sigilData.getCompound(slotKey);
                     buff.setUnlocked(slotData.getBoolean("unlocked"));
                     buff.setActive(slotData.getBoolean("active"));
-                    
+
                     // Re-apply active buffs after loading
                     if (buff.isActive() && buff.isUnlocked()) {
                         buff.applyBuff(player);
                     }
                 }
             }
-            
+
             // 更新为最新版本
             sigilData.putInt(VERSION_TAG, CURRENT_DATA_VERSION);
-            
+
             HeroSigil.LOGGER.info("Successfully loaded Hero Sigil data for player {}", player.getScoreboardName());
         } else {
             // First time - apply default unlocks based on achievements
@@ -536,13 +535,13 @@ public class HeroSigilData {
      */
     private static void applyDefaultBuffsForPlayer(Player player) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
-        
+
         int unlockedCount = com.hero.sigil.achievement.AchievementTracker.getUnlockedCount(player);
-        
+
         // Unlock slots based on achievements (max 3)
         for (int i = 0; i < Math.min(unlockedCount, buffs.size()); i++) {
             buffs.get(i).setUnlocked(true);
-            
+
             // Auto-activate unlocked buffs by default
             if (!buffs.get(i).isActive()) {
                 buffs.get(i).toggleActive();
@@ -555,20 +554,20 @@ public class HeroSigilData {
      */
     public static void syncFromAchievements(Player player) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
-        
+
         // Update unlocked status based on achievements
         for (int i = 0; i < Math.min(buffs.size(), AchievementTracker.AchievementType.values().length); i++) {
             AchievementTracker.AchievementType achievement = AchievementTracker.AchievementType.values()[i];
-            
+
             if (com.hero.sigil.achievement.AchievementTracker.isAchievementUnlocked(player, achievement)) {
                 buffs.get(i).setUnlocked(true);
-                
+
                 // Auto-activate newly unlocked buff
                 if (!buffs.get(i).isActive()) {
                     buffs.get(i).toggleActive();
-                    
+
                     // 对永久 buff 立即应用（处理最大生命值变化）
-                    if (buffs.get(i).isPermanent() && !player.level().isClientSide() && 
+                    if (buffs.get(i).isPermanent() && !player.level().isClientSide() &&
                         player instanceof net.minecraft.server.level.ServerPlayer) {
                         buffs.get(i).applyBuff(player);
                     }
@@ -583,17 +582,17 @@ public class HeroSigilData {
     public static int[] getBuffStatesArray(Player player) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
         int[] states = new int[3]; // Max 3 slots
-        
+
         for (int i = 0; i < Math.min(buffs.size(), 3); i++) {
             BuffEffect buff = buffs.get(i);
-            
+
             // Encode state: bit 0 = unlocked, bit 1 = active, bits 8-15 = buff type index
-            int state = (buff.isUnlocked() ? 0x1 : 0) | 
+            int state = (buff.isUnlocked() ? 0x1 : 0) |
                        (buff.isActive() ? 0x2 : 0);
-            
+
             states[i] = state;
         }
-        
+
         return states;
     }
 
@@ -602,27 +601,27 @@ public class HeroSigilData {
      */
     public static void activateSlot(Player player, int slotIndex) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
-        
+
         if (slotIndex >= 0 && slotIndex < Math.min(buffs.size(), 3)) {
             BuffEffect buff = buffs.get(slotIndex);
-            
+
             // Check if unlocked by achievements
-            AchievementTracker.AchievementType achievement = 
+            AchievementTracker.AchievementType achievement =
                 AchievementTracker.AchievementType.values()[slotIndex];
-            
-            if (com.hero.sigil.achievement.AchievementTracker.isAchievementUnlocked(player, achievement) || 
+
+            if (com.hero.sigil.achievement.AchievementTracker.isAchievementUnlocked(player, achievement) ||
                 buff.isUnlocked()) {
-                
+
                 boolean wasActive = buff.isActive();
                 buff.toggleActive();
-                
+
                 // If deactivating, remove the effect
                 if (!buff.isActive() && !wasActive) {
                     player.removeEffect(buff.getMobEffect());
                 } else if (buff.isActive() && !wasActive) {
                     // Apply new effect when activating
                     buff.applyBuff(player);
-                    
+
                     // Sync to client
                     syncToClient(player);
                 }
@@ -635,9 +634,9 @@ public class HeroSigilData {
      */
     public static void syncToClient(Player player) {
         int[] states = getBuffStatesArray(player);
-        
+
         com.hero.sigil.network.HeroSigilNetworkManager.sendToPlayer(
-            new com.hero.sigil.network.BuffSlotSyncPacket(player.getId(), states), 
+            new com.hero.sigil.network.BuffSlotSyncPacket(player.getId(), states),
             (net.minecraft.server.level.ServerPlayer) player
         );
     }
@@ -661,7 +660,7 @@ public class HeroSigilData {
      */
     public static void reset(Player player) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
-        
+
         // Remove all active effects from player
         for (BuffEffect buff : buffs) {
             if (!player.level().isClientSide()) {
@@ -677,7 +676,7 @@ public class HeroSigilData {
      */
     public static void applyAllBuffs(Player player) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
-        
+
         for (BuffEffect buff : buffs) {
             if (buff.isActive() && buff.isUnlocked()) {
                 buff.applyBuff(player);
@@ -691,11 +690,11 @@ public class HeroSigilData {
     public static boolean[] getSlotStatus(Player player) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
         boolean[] statuses = new boolean[3]; // Max 3 slots
-        
+
         for (int i = 0; i < Math.min(buffs.size(), 3); i++) {
             statuses[i] = buffs.get(i).isUnlocked();
         }
-        
+
         return statuses;
     }
 
@@ -704,11 +703,11 @@ public class HeroSigilData {
      */
     public static boolean isSlotUnlocked(Player player, int slotIndex) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
-        
+
         if (slotIndex >= 0 && slotIndex < Math.min(buffs.size(), 3)) {
             return buffs.get(slotIndex).isUnlocked();
         }
-        
+
         return false;
     }
 
@@ -717,11 +716,11 @@ public class HeroSigilData {
      */
     public static boolean isSlotActive(Player player, int slotIndex) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
-        
+
         if (slotIndex >= 0 && slotIndex < Math.min(buffs.size(), 3)) {
             return buffs.get(slotIndex).isActive();
         }
-        
+
         return false;
     }
 
@@ -731,7 +730,7 @@ public class HeroSigilData {
     public static java.util.List<MobEffectInstance> getActiveEffects(Player player) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
         java.util.ArrayList<MobEffectInstance> effects = new java.util.ArrayList<>();
-        
+
         for (BuffEffect buff : buffs) {
             if (buff.isActive() && buff.isUnlocked()) {
                 // Get the current effect instance from the player
@@ -741,7 +740,7 @@ public class HeroSigilData {
                 }
             }
         }
-        
+
         return effects;
     }
 
@@ -751,7 +750,7 @@ public class HeroSigilData {
     public static java.util.List<String> getActiveBuffNames(Player player) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
         java.util.ArrayList<String> activeNames = new java.util.ArrayList<>();
-        
+
         for (BuffEffect buff : buffs) {
             if (buff.isActive() && buff.isUnlocked()) {
                 // Get the localized name from the MobEffect's translation key
@@ -759,7 +758,7 @@ public class HeroSigilData {
                 activeNames.add(displayName);
             }
         }
-        
+
         return activeNames;
     }
 
@@ -768,13 +767,13 @@ public class HeroSigilData {
      */
     public static boolean hasActiveBuffs(Player player) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
-        
+
         for (BuffEffect buff : buffs) {
             if (buff.isActive() && buff.isUnlocked()) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -784,13 +783,13 @@ public class HeroSigilData {
     public static int getActiveBuffsCount(Player player) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
         int count = 0;
-        
+
         for (BuffEffect buff : buffs) {
             if (buff.isActive() && buff.isUnlocked()) {
                 count++;
             }
         }
-        
+
         return count;
     }
 
@@ -800,17 +799,17 @@ public class HeroSigilData {
     public static int[] getBuffTickState(Player player) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
         int[] states = new int[3]; // Max 3 slots
-        
+
         for (int i = 0; i < Math.min(buffs.size(), 3); i++) {
             BuffEffect buff = buffs.get(i);
-            
+
             // Store: bit 0 = has effect, bits 1-5 = remaining ticks (simplified)
             int tickState = 0x0;
             if (!player.level().isClientSide()) {
                 MobEffectInstance currentEffect = player.getEffect(buff.getMobEffect());
                 if (currentEffect != null && buff.isActive() && buff.isUnlocked()) {
                     tickState |= 0x1; // Mark as having effect
-                    
+
                     // Store remaining ticks (scaled down for storage efficiency)
                     int remainingTicks = Math.min(currentEffect.getDuration(), 320); // Cap at 16 seconds
                     states[i] = tickState | (remainingTicks << 8);
@@ -819,7 +818,7 @@ public class HeroSigilData {
                 }
             }
         }
-        
+
         return states;
     }
 
@@ -828,10 +827,10 @@ public class HeroSigilData {
      */
     public static void forceUnlockSlot(Player player, int slotIndex) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
-        
+
         if (slotIndex >= 0 && slotIndex < Math.min(buffs.size(), 3)) {
             buffs.get(slotIndex).setUnlocked(true);
-            
+
             // Sync to client
             syncToClient(player);
         }
@@ -842,18 +841,18 @@ public class HeroSigilData {
      */
     public static void forceActivateSlot(Player player, int slotIndex) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
-        
+
         if (slotIndex >= 0 && slotIndex < Math.min(buffs.size(), 3)) {
             BuffEffect buff = buffs.get(slotIndex);
-            
+
             // Ensure unlocked first
             buff.setUnlocked(true);
             buff.toggleActive();
-            
+
             // Apply immediately
             if (!player.level().isClientSide()) {
                 buff.applyBuff(player);
-                
+
                 // Sync to client
                 syncToClient(player);
             }
@@ -866,28 +865,28 @@ public class HeroSigilData {
     public static java.util.Map<String, Object> getDebugState(Player player) {
         java.util.List<BuffEffect> buffs = getAllBuffs();
         java.util.HashMap<String, Object> debugInfo = new java.util.HashMap<>();
-        
+
         for (int i = 0; i < Math.min(buffs.size(), 3); i++) {
             BuffEffect buff = buffs.get(i);
-            
+
             // Get current effect instance if any
-            MobEffectInstance currentEffect = !player.level().isClientSide() ? 
+            MobEffectInstance currentEffect = !player.level().isClientSide() ?
                 player.getEffect(buff.getMobEffect()) : null;
-            
+
             java.util.HashMap<String, Object> slotInfo = new java.util.HashMap<>();
             slotInfo.put("id", buff.getId());
             slotInfo.put("unlocked", buff.isUnlocked());
             slotInfo.put("active", buff.isActive());
             slotInfo.put("hasEffect", currentEffect != null);
-            
+
             if (currentEffect != null) {
                 slotInfo.put("durationTicks", currentEffect.getDuration());
                 slotInfo.put("amplifier", currentEffect.getAmplifier());
             }
-            
+
             debugInfo.put("slot_" + (i + 1), slotInfo);
         }
-        
+
         return debugInfo;
     }
 

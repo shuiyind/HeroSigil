@@ -2,7 +2,6 @@ package com.hero.sigil.gui.screen;
 
 import com.hero.sigil.HeroSigil;
 import com.hero.sigil.buffs.BuffEffect;
-import com.hero.sigil.item.HeroSigilItem;
 import com.hero.sigil.gui.widget.BuffSlotWidget;
 
 import net.minecraft.client.Minecraft;
@@ -18,7 +17,7 @@ import net.minecraft.world.item.ItemStack;
  * Main GUI screen for managing Hero Sigil buff slots.
  */
 public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
-    
+
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
         HeroSigil.MODID, "textures/gui/herosigil_gui.png"
     );
@@ -27,7 +26,7 @@ public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
     private BuffSlotWidget buffSlot1;
     private BuffSlotWidget buffSlot2;
     private BuffSlotWidget buffSlot3;
-    
+
     private Button closeButton;
     private Component titleText = Component.translatable("container.herosigil.title");
 
@@ -40,14 +39,14 @@ public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
     @Override
     protected void init() {
         super.init();
-        
+
         // Center the screen
         this.inventoryLabelY = this.imageHeight - 96 + 4;
         this.titleLabelX = (this.width - this.font.width(titleText)) / 2;
 
         // Create buff slot widgets (will be positioned in resize)
         createBuffSlotWidgets();
-        
+
         // Add close button
         closeButton = Button.builder(
             Component.translatable("gui.herosigil.close"),
@@ -55,7 +54,7 @@ public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
         )
         .bounds(this.width / 2 - 50, this.height - 30, 100, 20)
         .build();
-        
+
         this.addRenderableWidget(closeButton);
     }
 
@@ -64,13 +63,13 @@ public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
         int startX = this.width / 2 - 67;
         int startY = 50;
         int spacingX = 45;
-        
+
         buffSlot1 = new BuffSlotWidget(0, startX, startY, 32, 32);
         this.addRenderableWidget(buffSlot1);
-        
+
         buffSlot2 = new BuffSlotWidget(1, startX + spacingX, startY, 32, 32);
         this.addRenderableWidget(buffSlot2);
-        
+
         buffSlot3 = new BuffSlotWidget(2, startX + spacingX * 2, startY, 32, 32);
         this.addRenderableWidget(buffSlot3);
     }
@@ -78,12 +77,12 @@ public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
     @Override
     public void resize(Minecraft pMinecraft, int pWidth, int pHeight) {
         super.resize(pMinecraft, pWidth, pHeight);
-        
+
         // Reposition widgets based on new screen size
         int startX = this.width / 2 - 67;
         int startY = 50;
         int spacingX = 45;
-        
+
         if (buffSlot1 != null) {
             buffSlot1.setPosition(startX, startY);
         }
@@ -93,7 +92,7 @@ public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
         if (buffSlot3 != null) {
             buffSlot3.setPosition(startX + spacingX * 2, startY);
         }
-        
+
         // Reposition close button
         if (closeButton != null) {
             closeButton.setPos(this.width / 2 - 50, this.height - 30);
@@ -105,14 +104,14 @@ public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
         // Draw background texture
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
-        
+
         guiGraphics.blit(TEXTURE, x, y, 0, 0, this.imageWidth, this.imageHeight);
     }
 
     @Override
     public void render(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTickTime) {
         super.render(guiGraphics, pMouseX, pMouseY, pPartialTickTime);
-        
+
         // Draw title at top center
         int x = (this.width - this.font.width(titleText)) / 2;
         guiGraphics.drawString(this.font, titleText, x, 10, 0xFFFFFF, false);
@@ -121,7 +120,7 @@ public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
     @Override
     public void containerTick() {
         super.containerTick();
-        
+
         // Update buff slots state each tick to reflect server changes
         updateBuffSlotsState();
     }
@@ -129,15 +128,15 @@ public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
     private void updateBuffSlotsState() {
         // Get the equipped Hero Sigil stack from player inventory
         ItemStack sigilStack = getMenu().getSigilStack();
-        
+
         if (!sigilStack.isEmpty()) {
             // Update buff slots based on unlocked achievements and active states
             int[] buffs = com.hero.sigil.buffs.HeroSigilData.getBuffStatesArray(
                 Minecraft.getInstance().player);
-            
+
             // Get the list of available buffs from HeroSigilData
             java.util.List<BuffEffect> allBuffs = com.hero.sigil.buffs.HeroSigilData.getAllBuffs();
-            
+
             if (buffSlot1 != null && allBuffs.size() > 0) {
                 BuffEffect buff1 = allBuffs.get(0);
                 buffSlot1.setUnlocked(buff1.isUnlocked());
@@ -145,14 +144,14 @@ public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
                 boolean isActive = (buffs.length > 0) && ((buffs[0] & 0x2) != 0);
                 buffSlot1.setActive(isActive);
             }
-            
+
             if (buffSlot2 != null && allBuffs.size() > 1) {
                 BuffEffect buff2 = allBuffs.get(1);
                 buffSlot2.setUnlocked(buff2.isUnlocked());
                 boolean isActive = (buffs.length > 1) && ((buffs[1] & 0x2) != 0);
                 buffSlot2.setActive(isActive);
             }
-            
+
             if (buffSlot3 != null && allBuffs.size() > 2) {
                 BuffEffect buff3 = allBuffs.get(2);
                 buffSlot3.setUnlocked(buff3.isUnlocked());

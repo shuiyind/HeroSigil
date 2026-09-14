@@ -5,7 +5,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 
 /**
@@ -23,12 +22,12 @@ public class CapabilityEvents {
     public static void onPlayerLogout(PlayerEvent.LoggedOutEvent event) {
         if (event.getPlayer() instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
             CompoundTag persistData = serverPlayer.getPersistentData();
-            
+
             // Save buff states and achievement progress to persistent data
             com.hero.sigil.buffs.HeroSigilData.onSave(serverPlayer, persistData);
-            
+
             com.hero.sigil.HeroSigil.LOGGER.debug(
-                "Saved Hero Sigil data for player: {}", 
+                "Saved Hero Sigil data for player: {}",
                 serverPlayer.getScoreboardName()
             );
         }
@@ -41,12 +40,12 @@ public class CapabilityEvents {
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
             CompoundTag persistData = serverPlayer.getPersistentData();
-            
+
             // Load buff states and achievement progress from persistent data
             com.hero.sigil.buffs.HeroSigilData.onLoad(serverPlayer, persistData);
-            
+
             com.hero.sigil.HeroSigil.LOGGER.info(
-                "Loaded Hero Sigil data for player: {}", 
+                "Loaded Hero Sigil data for player: {}",
                 serverPlayer.getScoreboardName()
             );
         }
@@ -59,25 +58,25 @@ public class CapabilityEvents {
     public static void onPlayerClone(PlayerEvent.Clone event) {
         if (event.isWasDeath()) {
             net.minecraft.world.entity.player.Player original = event.getOriginal();
-            
+
             if (original instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
                 CompoundTag origPersistData = serverPlayer.getPersistentData();
-                
+
                 // Get the saved Hero Sigil data from original player
                 if (origPersistData.contains(TAG_KEY)) {
                     CompoundTag sigilNbt = origPersistData.getCompound(TAG_KEY);
-                    
+
                     // Copy to new player's persistent data
-                    net.minecraft.server.level.ServerPlayer newPlayer = 
+                    net.minecraft.server.level.ServerPlayer newPlayer =
                         (net.minecraft.server.level.ServerPlayer) event.getEntity();
                     CompoundTag newPersistData = newPlayer.getPersistentData();
-                    
+
                     if (!newPersistData.contains(TAG_KEY)) {
                         newPersistData.put(TAG_KEY, sigilNbt.copy());
-                        
+
                         // Load the data into buff system
                         com.hero.sigil.buffs.HeroSigilData.onLoad(
-                            event.getEntity(), 
+                            event.getEntity(),
                             newPersistData
                         );
                     }
@@ -92,7 +91,7 @@ public class CapabilityEvents {
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         CommandDispatcher<net.minecraft.server.level.ServerPlayer> dispatcher = event.getDispatcher();
-        
+
         // /herosigil recover - 从备份恢复数据
         dispatcher.register(
             com.mojang.brigadier.Command.literal("herosigil")
@@ -102,11 +101,11 @@ public class CapabilityEvents {
                         if (player == null) {
                             return 0;
                         }
-                        
+
                         CompoundTag persistData = player.getPersistentData();
-                        com.hero.sigil.data.DataRecovery.RecoveryResult result = 
+                        com.hero.sigil.data.DataRecovery.RecoveryResult result =
                             com.hero.sigil.data.DataRecovery.restoreFromBackup(player, persistData);
-                        
+
                         if (result.isSuccess()) {
                             player.sendSystemMessage(
                                 net.minecraft.network.chat.Component.literal(
@@ -120,12 +119,12 @@ public class CapabilityEvents {
                                 )
                             );
                         }
-                        
+
                         return 1;
                     })
                 )
         );
-        
+
         // /herosigil backup - 手动创建备份
         dispatcher.register(
             com.mojang.brigadier.Command.literal("herosigil")
@@ -135,19 +134,19 @@ public class CapabilityEvents {
                         if (player == null) {
                             return 0;
                         }
-                        
+
                         CompoundTag persistData = player.getPersistentData();
                         com.hero.sigil.data.DataRecovery.createBackup(player, persistData);
-                        
+
                         player.sendSystemMessage(
                             net.minecraft.network.chat.Component.literal("§a§l勇者之证§r§f: 已创建数据备份")
                         );
-                        
+
                         return 1;
                     })
                 )
         );
-        
+
         // /herosigil history - 查看恢复历史
         dispatcher.register(
             com.mojang.brigadier.Command.literal("herosigil")
@@ -157,14 +156,14 @@ public class CapabilityEvents {
                         if (player == null) {
                             return 0;
                         }
-                        
+
                         com.hero.sigil.data.DataRecovery.showBackupInfo(player);
-                        
+
                         return 1;
                     })
                 )
         );
-        
+
         // /herosigil repair - 修复数据不一致
         dispatcher.register(
             com.mojang.brigadier.Command.literal("herosigil")
@@ -174,13 +173,13 @@ public class CapabilityEvents {
                         if (player == null) {
                             return 0;
                         }
-                        
+
                         com.hero.sigil.data.DataRecovery.fixDataInconsistency(player);
                         return 1;
                     })
                 )
         );
-        
+
         // /herosigil validate - 验证数据完整性
         dispatcher.register(
             com.mojang.brigadier.Command.literal("herosigil")
@@ -190,7 +189,7 @@ public class CapabilityEvents {
                         if (player == null) {
                             return 0;
                         }
-                        
+
                         CompoundTag persistData = player.getPersistentData();
                         if (persistData.contains("HeroSigil")) {
                             CompoundTag sigilData = persistData.getCompound("HeroSigil");
@@ -208,7 +207,7 @@ public class CapabilityEvents {
                                 net.minecraft.network.chat.Component.literal("§e§l勇者之证§r§f: 玩家无勇者之证数据")
                             );
                         }
-                        
+
                         return 1;
                     })
                 )

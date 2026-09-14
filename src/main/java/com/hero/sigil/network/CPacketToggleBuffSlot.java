@@ -38,16 +38,16 @@ public class CPacketToggleBuffSlot {
     public static void handle(CPacketToggleBuffSlot pPacket, IPayloadContext pContext) {
         // Queue work to main thread
         pContext.enqueueWork(() -> {
-            net.minecraft.server.level.ServerPlayer player = 
+            net.minecraft.server.level.ServerPlayer player =
                 (net.minecraft.server.level.ServerPlayer) pContext.player();
-            
+
             if (player != null && pPacket.slotIndex >= 0 && pPacket.slotIndex < 3) {
                 // Toggle the buff slot on server side
                 com.hero.sigil.buffs.HeroSigilData.activateSlot(player, pPacket.slotIndex);
-                
+
                 // Sync updated state to client
                 BuffSlotSyncPacket syncPacket = new BuffSlotSyncPacket(
-                    player.getId(), 
+                    player.getId(),
                     com.hero.sigil.buffs.HeroSigilData.getBuffStatesArray(player)
                 );
                 HeroSigilNetworkManager.sendToPlayer(syncPacket, (ServerPlayer) player);

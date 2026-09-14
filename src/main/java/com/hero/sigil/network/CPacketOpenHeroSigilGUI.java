@@ -37,16 +37,16 @@ public class CPacketOpenHeroSigilGUI {
         // Queue work to main thread
         pContext.enqueueWork(() -> {
             Minecraft minecraft = Minecraft.getInstance();
-            
+
             if (minecraft.player != null && minecraft.player.getId() == pPacket.playerId) {
                 // Open the Hero Sigil GUI screen on client side
-                
-                net.minecraft.client.gui.screens.Screen screen = 
+
+                net.minecraft.client.gui.screens.Screen screen =
                     new com.hero.sigil.gui.screen.HeroSigilScreen(
-                        new com.hero.sigil.gui.menu.HeroSigilMenu(0, minecraft.player.getInventory()), 
-                        minecraft.player.getInventory(), 
+                        new com.hero.sigil.gui.menu.HeroSigilMenu(0, minecraft.player.getInventory()),
+                        minecraft.player.getInventory(),
                         net.minecraft.network.chat.Component.translatable("container.herosigil.title"));
-                
+
                 minecraft.setScreen(screen);
             }
         });

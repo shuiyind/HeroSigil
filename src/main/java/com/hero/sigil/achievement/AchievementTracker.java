@@ -1,9 +1,7 @@
 package com.hero.sigil.achievement;
 
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.boss.BossDisplayData;
 import net.minecraft.world.entity.boss.WitherBoss;
 import net.minecraft.world.entity.monster.EnderDragon;
@@ -31,7 +29,7 @@ public class AchievementTracker {
 
     // Store achievement progress per player
     private static final Map<String, PlayerProgress> PLAYER_PROGRESSES = new HashMap<>();
-    
+
     // Track biome exploration per player (key: playerId -> set of biomes visited)
     private static final Map<String, Set<ResourceKey<net.minecraft.world.level.Biome>>> BIOME_VISITS = new HashMap<>();
 
@@ -62,13 +60,13 @@ public class AchievementTracker {
     public static class PlayerProgress {
         private final Map<AchievementType, Boolean> unlockedAchievements = new HashMap<>();
         private final Map<AchievementType, Integer> progressValues = new HashMap<>();
-        
+
         // Boss 击杀计数
         private int bossKillCount = 0;
-        
+
         // 保存玩家引用用于通知和动画效果
         private Player currentPlayer;
-        
+
         // 成就历史记录
         private final List<AchievementType> achievementHistory = new ArrayList<>();
 
@@ -94,12 +92,12 @@ public class AchievementTracker {
         private void notifyPlayerUnlock(AchievementType achievement) {
             if (currentPlayer != null) {
                 String achievementName = getAchievementName(achievement);
-                
+
                 // 发送中文通知
                 currentPlayer.sendSystemMessage(
                     net.minecraft.network.chat.Component.literal("§6§l成就解锁§r§f: " + achievementName + " - 新的 buff 槽位已解锁！")
                 );
-                
+
                 // 播放 buff 解锁音效
                 currentPlayer.level().playSound(
                     null,
@@ -111,7 +109,7 @@ public class AchievementTracker {
                     1.0f,
                     1.0f
                 );
-                
+
                 // 播放成就完成动画
                 playAchievementCompleteAnimation(currentPlayer, achievement);
             }
@@ -119,7 +117,7 @@ public class AchievementTracker {
 
         public void incrementProgress(AchievementType achievement, int amount, Player player) {
             progressValues.merge(achievement, amount, Integer::sum);
-            
+
             // Check if progress threshold is met (simplified logic)
             checkUnlock(achievement, player);
         }
@@ -144,7 +142,7 @@ public class AchievementTracker {
                 double offsetX = (Math.random() - 0.5) * 2;
                 double offsetY = Math.random() * 2;
                 double offsetZ = (Math.random() - 0.5) * 2;
-                
+
                 player.level().addParticle(
                     net.minecraft.core.particles.ParticleTypes.NOTE,
                     player.getX() + offsetX,
@@ -153,7 +151,7 @@ public class AchievementTracker {
                     1.0, 0.0, 0.0
                 );
             }
-            
+
             // 播放成就授予音效
             player.level().playSound(
                 null,
@@ -196,11 +194,11 @@ public class AchievementTracker {
                 );
                 return;
             }
-            
+
             player.sendSystemMessage(
                 net.minecraft.network.chat.Component.literal("§6§l已解锁的成就§r§f:")
             );
-            
+
             for (AchievementType achievement : achievementHistory) {
                 String name = getAchievementName(achievement);
                 player.sendSystemMessage(
@@ -235,35 +233,35 @@ public class AchievementTracker {
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Pre event) {
         Player player = event.getPlayer();
-        
+
         // Track biome exploration for EXPLORE_ALL_BIOMES achievement
         if (player instanceof ServerPlayer serverPlayer) {
             // 每 100 tick (5 秒) 记录一次群系，而非每个 tick
             if (player.tickCount % 100 != 0) {
                 return;
             }
-            
+
             String playerId = player.getStringUUID().toString();
-            
+
             // 已访问 50 个群系后停止记录（超过 20 已解锁成就）
             Set<ResourceKey<net.minecraft.world.level.Biome>> visitedBiomes = BIOME_VISITS.get(playerId);
             if (visitedBiomes != null && visitedBiomes.size() >= 50) {
                 return;
             }
-            
+
             // 获取当前群系（使用 unwrapKey() 获取 ResourceKey<Biome>）
             var biomeHolder = player.level().getBiome(player.blockPosition());
             var currentBiome = biomeHolder.unwrapKey().orElse(null);
-            
+
             if (currentBiome != null) {
                 boolean isNewBiome = visitedBiomes == null || !visitedBiomes.contains(currentBiome);
-                
+
                 if (isNewBiome) {
                     BIOME_VISITS.computeIfAbsent(playerId, k -> new HashSet<>()).add(currentBiome);
-                    
+
                     // 更新进度提示变量（添加新群系后的数量）
                     int progressCount = visitedBiomes.size();
-                    
+
                     // 每访问 5 个新群系，发送一次进度提示
                     if (progressCount % 5 == 0 && progressCount < 20) {
                         int percentage = (int) ((double) progressCount / 20 * 100);
@@ -273,10 +271,10 @@ public class AchievementTracker {
                             )
                         );
                     }
-                    
+
                     // 检查是否解锁成就
                     PlayerProgress progress = getPlayerProgress(player);
-                    
+
                     // 访问 20 个不同群系后解锁 EXPLORE_ALL_BIOMES 成就
                     if (progressCount >= 20 && !progress.isUnlocked(AchievementType.EXPLORE_ALL_BIOMES)) {
                         progress.unlock(AchievementType.EXPLORE_ALL_BIOMES, player);
@@ -289,10 +287,10 @@ public class AchievementTracker {
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.LoggedOutEvent event) {
         String playerId = event.getPlayer().getStringUUID().toString();
-        
+
         // 清理群系访问数据
         BIOME_VISITS.remove(playerId);
-        
+
         // 清理成就进度数据
         PLAYER_PROGRESSES.remove(playerId);
     }
@@ -301,20 +299,20 @@ public class AchievementTracker {
     public static void onLivingDeath(LivingDeathEvent event) {
         if (event.getSource().getDirectEntity() instanceof Player player) {
             PlayerProgress progress = getPlayerProgress(player);
-            
+
             // 使用 isBossEntity() 方法检测 Boss
             if (isBossEntity(event.getEntity())) {
                 String bossName = event.getEntity().getDisplayName().getString();
-                
+
                 // 增加 Boss 击杀计数
                 progress.incrementBossKillCount();
                 progress.incrementProgress(AchievementType.DEFEAT_BOSS, 1, player);
-                
+
                 // 特殊处理末影龙
                 if (event.getEntity() instanceof EnderDragon) {
                     if (!progress.isUnlocked(AchievementType.DEFEAT_ENDER_DRAGON)) {
                         progress.unlock(AchievementType.DEFEAT_ENDER_DRAGON, player);
-                        
+
                         // 发送中文通知
                         player.sendSystemMessage(
                             net.minecraft.network.chat.Component.literal("§e§l成就解锁§r§f: 成功击败末影龙！新的 buff 槽位已解锁。")
@@ -344,13 +342,13 @@ public class AchievementTracker {
         if (entity instanceof WitherBoss || entity instanceof EnderDragon) {
             return true;
         }
-        
+
         // 方法 2: 检查实体是否带有 BossDisplayData
         BossDisplayData bossDisplay = entity.getType().getBossDisplayData();
         if (bossDisplay != null) {
             return true;
         }
-        
+
         // 方法 3: 检查实体 ID 路径
         var registryName = entity.getType().getDefaultRegistryName();
         if (registryName != null) {
@@ -360,7 +358,7 @@ public class AchievementTracker {
                 default -> false;
             };
         }
-        
+
         return false;
     }
 
@@ -413,7 +411,7 @@ public class AchievementTracker {
     public static int getUnlockedCount(Player player) {
         PlayerProgress progress = PLAYER_PROGRESSES.get(player.getStringUUID().toString());
         if (progress == null) return 0;
-        
+
         long count = progress.getUnlockedAchievements().values().stream()
             .filter(Boolean::booleanValue)
             .count();

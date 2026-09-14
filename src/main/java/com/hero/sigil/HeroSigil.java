@@ -4,17 +4,14 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -32,7 +29,7 @@ public class HeroSigil {
 
     // Creative Mode Tab for the mod
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_MODE_TAB = CREATIVE_MODE_TABS.register(
-        "herosigil_tab", 
+        "herosigil_tab",
         () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.herosigil"))
             .icon(() -> ModRegistries.HERO_SIGIL.get().getDefaultInstance())
@@ -47,10 +44,10 @@ public class HeroSigil {
     public HeroSigil(IEventBus modEventBus, net.neoforged.fml.ModContainer modContainer) {
         // Register the Deferred Register to the mod event bus so items get registered
         ITEMS.register(modEventBus);
-        
+
         // Register the Deferred Register to the mod event bus so tabs get registered
         CREATIVE_MODE_TABS.register(modEventBus);
-        
+
         // Register sound events to the mod event bus
         ModRegistries.SOUND_EVENTS.register(modEventBus);
 
