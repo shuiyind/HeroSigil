@@ -87,7 +87,7 @@ public class HeroSigilItem extends Item {
     }
 
     /**
-     * Called on each tick for equipped players to manage buff refresh.
+     * 对每个装备的玩家进行 tick 更新，管理 buff 刷新
      */
     public static void onPlayerTick(Player player) {
         if (player.level().isClientSide() || !(player instanceof net.minecraft.server.level.ServerPlayer)) {
@@ -100,12 +100,21 @@ public class HeroSigilItem extends Item {
             return;
         }
         
-        // Periodically refresh active buffs
-        int tickCount = player.tickCount;
-        if (tickCount % BUFF_REFRESH_INTERVAL == 0) {
-            com.hero.sigil.buffs.HeroSigilData.applyAllBuffs(player);
-            
-            // Sync states to client periodically
+        // 对每个激活的 buff 独立刷新
+        java.util.List<com.hero.sigil.buffs.BuffEffect> buffs = com.hero.sigil.buffs.HeroSigilData.getAllBuffs();
+        boolean needsSync = false;
+        
+        for (com.hero.sigil.buffs.BuffEffect buff : buffs) {
+            if (buff.isActive() && buff.isUnlocked()) {
+                buff.applyBuff(player);
+                if (buff.getDurationSeconds() > 0) { // 非永久 buff
+                    needsSync = true;
+                }
+            }
+        }
+        
+        // 仅在必要时同步状态
+        if (needsSync) {
             com.hero.sigil.network.BuffSlotSyncPacket packet = new com.hero.sigil.network.BuffSlotSyncPacket(
                 player.getId(), 
                 com.hero.sigil.buffs.HeroSigilData.getBuffStatesArray(player)
@@ -120,7 +129,7 @@ public class HeroSigilItem extends Item {
     private static ItemStack getEquippedSigil(Player player) {
         // Check Curios API slots if available
         try {
-            net.curios.api.CuriosApi curiosApi = net.curios.api.CuriosAPI.getCuriosInventory(player).orElse(null);
+            top.theillusivec4.curios.api.CuriosApi curiosApi = top.theillusivec4.curios.api.CuriosAPI.getCuriosInventory(player).orElse(null);
             if (curiosApi != null) {
                 ItemStack sigil = curiosApi.getItemStacksHandler().getStackInSlot("hero_sigil", 0);
                 if (!sigil.isEmpty() && sigil.getItem() instanceof HeroSigilItem) {

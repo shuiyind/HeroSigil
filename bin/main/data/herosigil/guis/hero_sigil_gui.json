@@ -1,0 +1,6 @@
+{
+  "type": "herosigil:hero_sigil",
+  "width": 256,
+  "height": 180,
+  "background": "herosigil:textures/gui/herosigil_gui.png"
+}

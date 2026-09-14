@@ -1,0 +1,29 @@
+{
+  "herosigil:buff_unlock": {
+    "subtitle": "herosigil.subtitle.buff_unlock",
+    "sounds": [
+      {
+        "name": "herosigil:sounds/buff_unlock",
+        "stream": false
+      }
+    ]
+  },
+  "herosigil:buff_activate": {
+    "subtitle": "herosigil.subtitle.buff_activate",
+    "sounds": [
+      {
+        "name": "herosigil:sounds/buff_activate",
+        "stream": false
+      }
+    ]
+  },
+  "herosigil:buff_deactivate": {
+    "subtitle": "herosigil.subtitle.buff_deactivate",
+    "sounds": [
+      {
+        "name": "herosigil:sounds/buff_deactivate",
+        "stream": false
+      }
+    ]
+  }
+}

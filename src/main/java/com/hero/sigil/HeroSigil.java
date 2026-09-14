@@ -50,6 +50,9 @@ public class HeroSigil {
         
         // Register the Deferred Register to the mod event bus so tabs get registered
         CREATIVE_MODE_TABS.register(modEventBus);
+        
+        // Register sound events to the mod event bus
+        ModRegistries.SOUND_EVENTS.register(modEventBus);
 
         // Initialize all registries
         ModRegistries.init();
