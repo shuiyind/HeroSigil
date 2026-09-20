@@ -19,8 +19,8 @@ public class CapabilityEvents {
      * Save player data when they disconnect.
      */
     @SubscribeEvent
-    public static void onPlayerLogout(PlayerEvent.LoggedOutEvent event) {
-        if (event.getPlayer() instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+    public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
             CompoundTag persistData = serverPlayer.getPersistentData();
 
             // Save buff states and achievement progress to persistent data
@@ -90,12 +90,12 @@ public class CapabilityEvents {
      */
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
-        CommandDispatcher<net.minecraft.server.level.ServerPlayer> dispatcher = event.getDispatcher();
+        CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher = event.getDispatcher();
 
         // /herosigil recover - 从备份恢复数据
         dispatcher.register(
-            com.mojang.brigadier.Command.literal("herosigil")
-                .then(com.mojang.brigadier.Command.literal("recover")
+            com.mojang.brigadier.builder.LiteralArgumentBuilder.<net.minecraft.commands.CommandSourceStack>literal("herosigil")
+                .then(com.mojang.brigadier.builder.LiteralArgumentBuilder.<net.minecraft.commands.CommandSourceStack>literal("recover")
                     .executes(context -> {
                         var player = context.getSource().getPlayer();
                         if (player == null) {
@@ -127,8 +127,8 @@ public class CapabilityEvents {
 
         // /herosigil backup - 手动创建备份
         dispatcher.register(
-            com.mojang.brigadier.Command.literal("herosigil")
-                .then(com.mojang.brigadier.Command.literal("backup")
+            com.mojang.brigadier.builder.LiteralArgumentBuilder.<net.minecraft.commands.CommandSourceStack>literal("herosigil")
+                .then(com.mojang.brigadier.builder.LiteralArgumentBuilder.<net.minecraft.commands.CommandSourceStack>literal("backup")
                     .executes(context -> {
                         var player = context.getSource().getPlayer();
                         if (player == null) {
@@ -149,8 +149,8 @@ public class CapabilityEvents {
 
         // /herosigil history - 查看恢复历史
         dispatcher.register(
-            com.mojang.brigadier.Command.literal("herosigil")
-                .then(com.mojang.brigadier.Command.literal("history")
+            com.mojang.brigadier.builder.LiteralArgumentBuilder.<net.minecraft.commands.CommandSourceStack>literal("herosigil")
+                .then(com.mojang.brigadier.builder.LiteralArgumentBuilder.<net.minecraft.commands.CommandSourceStack>literal("history")
                     .executes(context -> {
                         var player = context.getSource().getPlayer();
                         if (player == null) {
@@ -166,8 +166,8 @@ public class CapabilityEvents {
 
         // /herosigil repair - 修复数据不一致
         dispatcher.register(
-            com.mojang.brigadier.Command.literal("herosigil")
-                .then(com.mojang.brigadier.Command.literal("repair")
+            com.mojang.brigadier.builder.LiteralArgumentBuilder.<net.minecraft.commands.CommandSourceStack>literal("herosigil")
+                .then(com.mojang.brigadier.builder.LiteralArgumentBuilder.<net.minecraft.commands.CommandSourceStack>literal("repair")
                     .executes(context -> {
                         var player = context.getSource().getPlayer();
                         if (player == null) {
@@ -182,8 +182,8 @@ public class CapabilityEvents {
 
         // /herosigil validate - 验证数据完整性
         dispatcher.register(
-            com.mojang.brigadier.Command.literal("herosigil")
-                .then(com.mojang.brigadier.Command.literal("validate")
+            com.mojang.brigadier.builder.LiteralArgumentBuilder.<net.minecraft.commands.CommandSourceStack>literal("herosigil")
+                .then(com.mojang.brigadier.builder.LiteralArgumentBuilder.<net.minecraft.commands.CommandSourceStack>literal("validate")
                     .executes(context -> {
                         var player = context.getSource().getPlayer();
                         if (player == null) {

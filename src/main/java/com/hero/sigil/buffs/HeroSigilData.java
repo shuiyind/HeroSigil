@@ -1,5 +1,8 @@
 package com.hero.sigil.buffs;
 
+import com.hero.sigil.HeroSigil;
+import com.hero.sigil.achievement.AchievementTracker;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -12,7 +15,7 @@ import net.minecraft.world.entity.player.Player;
 public class HeroSigilData {
 
     private static final String TAG_KEY = "HeroSigil";
-    private static final int CURRENT_DATA_VERSION = 1;
+    public static final int CURRENT_DATA_VERSION = 1;
     private static final String VERSION_TAG = "dataVersion";
 
     // 数据备份相关常量
@@ -158,7 +161,7 @@ public class HeroSigilData {
      * 检查 buff 状态与 NBT 数据是否一致
      * @return 如果一致返回 true，否则返回 false
      */
-    public static boolean checkDataConsistency(Player player) {
+    public static boolean checkDataConsistency(ServerPlayer player) {
         CompoundTag persistData = player.getPersistentData();
         if (!persistData.contains(TAG_KEY)) {
             return false;
@@ -193,7 +196,7 @@ public class HeroSigilData {
     /**
      * 自动修复数据不一致
      */
-    public static void fixDataInconsistency(Player player) {
+    public static void fixDataInconsistency(ServerPlayer player) {
         CompoundTag persistData = player.getPersistentData();
         if (!persistData.contains(TAG_KEY)) {
             return;
@@ -251,7 +254,7 @@ public class HeroSigilData {
             CompoundTag slotData = new CompoundTag();
             slotData.putBoolean("unlocked", buff.isUnlocked());
             slotData.putBoolean("active", buff.isActive());
-            sigilData.setTag(slotKey, slotData);
+            sigilData.put(slotKey, slotData);
         }
 
         nbt.put(TAG_KEY, sigilData);
@@ -291,7 +294,7 @@ public class HeroSigilData {
                         CompoundTag slotData = new CompoundTag();
                         slotData.putBoolean("unlocked", false);
                         slotData.putBoolean("active", false);
-                        sigilData.setTag("slot_" + i, slotData);
+                        sigilData.put("slot_" + i, slotData);
                     }
 
                     nbt.put(TAG_KEY, sigilData);
@@ -416,7 +419,7 @@ public class HeroSigilData {
                     CompoundTag slotData = new CompoundTag();
                     slotData.putBoolean("unlocked", false);
                     slotData.putBoolean("active", false);
-                    data.setTag(slotKey, slotData);
+                    data.put(slotKey, slotData);
 
                     HeroSigil.LOGGER.info("Created new empty buff slot {} for player {}", i, player.getScoreboardName());
                 }
@@ -645,7 +648,7 @@ public class HeroSigilData {
      * 检查指定 buff 是否可以应用（考虑冲突）
      */
     public static boolean canApplyBuff(Player player, BuffEffect buff) {
-        if (buff.getMobEffect() == MobEffects.SPEED) {
+        if (buff.getMobEffect() == MobEffects.MOVEMENT_SPEED) {
             MobEffectInstance existingEffect = player.getEffect(buff.getMobEffect());
             if (existingEffect != null) {
                 // 如果已有更强的加速效果，返回 false
@@ -754,7 +757,7 @@ public class HeroSigilData {
         for (BuffEffect buff : buffs) {
             if (buff.isActive() && buff.isUnlocked()) {
                 // Get the localized name from the MobEffect's translation key
-                String displayName = buff.getMobEffect().getDescriptionId();
+                String displayName = buff.getMobEffect().value().getDescriptionId();
                 activeNames.add(displayName);
             }
         }

@@ -1,15 +1,17 @@
 package com.hero.sigil.network;
 
 import com.hero.sigil.HeroSigil;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 /**
  * Network manager for Hero Sigil mod.
  */
-@EventBusSubscriber(modid = HeroSigil.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = HeroSigil.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class HeroSigilNetworkManager {
 
     /**
@@ -17,37 +19,35 @@ public class HeroSigilNetworkManager {
      */
     @SubscribeEvent
     public static void registerHandlers(RegisterPayloadHandlersEvent pEvent) {
-        PayloadRegistrar registrar = pEvent.registrar(HeroSigil.MODID)
-            .versionedOnly()
-            .optional();
+        PayloadRegistrar registrar = pEvent.registrar("1").optional();
 
         // Register buff slot sync packet (bidirectional: server <-> client)
         registrar.playBidirectional(
-            com.hero.sigil.network.BuffSlotSyncPacket.TYPE_ID,
-            com.hero.sigil.network.BuffSlotSyncPacket::fromBytes,
-            com.hero.sigil.network.BuffSlotSyncPacket::handle
+            BuffSlotSyncPacket.TYPE,
+            BuffSlotSyncPacket.STREAM_CODEC,
+            BuffSlotSyncPacket::handle
         );
 
         // Register open GUI packet (server -> client)
         registrar.playToClient(
-            "open_herosigil_gui",
-            com.hero.sigil.network.CPacketOpenHeroSigilGUI::fromBytes,
-            com.hero.sigil.network.CPacketOpenHeroSigilGUI::handle
+            CPacketOpenHeroSigilGUI.TYPE,
+            CPacketOpenHeroSigilGUI.STREAM_CODEC,
+            CPacketOpenHeroSigilGUI::handle
         );
 
         // Register toggle buff slot packet (client -> server)
         registrar.playToServer(
-            "toggle_buff_slot",
-            com.hero.sigil.network.CPacketToggleBuffSlot::fromBytes,
-            com.hero.sigil.network.CPacketToggleBuffSlot::handle
+            CPacketToggleBuffSlot.TYPE,
+            CPacketToggleBuffSlot.STREAM_CODEC,
+            CPacketToggleBuffSlot::handle
         );
     }
 
     /**
      * Send a packet to a specific player.
      */
-    public static <T> void sendToPlayer(T packet, net.minecraft.server.level.ServerPlayer player) {
-        net.neoforged.neoforge.network.NetworkHooks.sendTo(packet, player.connection.connection, player.getDirection());
+    public static <T extends CustomPacketPayload> void sendToPlayer(T packet, net.minecraft.server.level.ServerPlayer player) {
+        PacketDistributor.sendToPlayer(player, packet);
     }
 
     /**

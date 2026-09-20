@@ -1,18 +1,19 @@
 package com.hero.sigil.item;
 
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnBlockContext;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.UseOnContext;
 
 /**
  * Hero Sigil - The main accessory item that provides buff slots.
  *
- * This item will be equipped via Curios API in a custom slot.
+ * This item is used by right-clicking to open the buff slot management GUI.
  * Each unlocked buff slot grants a specific positive effect to the player.
  */
 public class HeroSigilItem extends Item {
@@ -22,7 +23,7 @@ public class HeroSigilItem extends Item {
 
     public HeroSigilItem() {
         super(new Properties()
-            .stacksPerStack(1)  // Only one can be equipped at a time
+            .stacksTo(1)  // Only one can be equipped at a time
             .durability(0)      // No durability by default (can be added later)
         );
     }
@@ -53,13 +54,10 @@ public class HeroSigilItem extends Item {
     }
 
     /**
-     * Called when the item is equipped in a Curios slot.
+     * Called when the item is equipped.
      * This method can be overridden to apply passive effects.
      */
-    @Override
     public void onEquip(ItemStack stack, LivingEntity entity) {
-        super.onEquip(stack, entity);
-
         // Apply all active buffs if this is a player
         if (entity instanceof Player player && !player.level().isClientSide()) {
             com.hero.sigil.buffs.HeroSigilData.applyAllBuffs(player);
@@ -74,12 +72,9 @@ public class HeroSigilItem extends Item {
     }
 
     /**
-     * Called when the item is unequipped from a Curios slot.
+     * Called when the item is unequipped.
      */
-    @Override
     public void onRemove(ItemStack stack, LivingEntity entity) {
-        super.onRemove(stack, entity);
-
         // Remove all active buffs if this is a player
         if (entity instanceof Player player && !player.level().isClientSide()) {
             com.hero.sigil.buffs.HeroSigilData.reset(player);
@@ -127,63 +122,20 @@ public class HeroSigilItem extends Item {
      * Get the equipped Hero Sigil ItemStack for a player.
      */
     private static ItemStack getEquippedSigil(Player player) {
-        // Check Curios API slots if available
-        try {
-            top.theillusivec4.curios.api.CuriosApi curiosApi = top.theillusivec4.curios.api.CuriosAPI.getCuriosInventory(player).orElse(null);
-            if (curiosApi != null) {
-                ItemStack sigil = curiosApi.getItemStacksHandler().getStackInSlot("hero_sigil", 0);
-                if (!sigil.isEmpty() && sigil.getItem() instanceof HeroSigilItem) {
-                    return sigil;
-                }
+        // Scan the player's inventory for the sigil item
+        for (ItemStack stack : player.getInventory().items) {
+            if (!stack.isEmpty() && stack.getItem() instanceof HeroSigilItem) {
+                return stack;
             }
-        } catch (Exception e) {
-            // Curios API not available, continue with fallback check
         }
-
-        // Fallback: Check main inventory for testing purposes
         return ItemStack.EMPTY;
-    }
-
-    /**
-     * Check if this item can be equipped in a Curios slot.
-     */
-    @Override
-    public boolean canEquipFromTrade(ItemStack stack, net.minecraft.world.entity.Entity target) {
-        return true;  // Can be obtained from villager trades
-    }
-
-    /**
-     * Define the equipment slot type for this item.
-     * For Curios compatibility, this will be handled by the API.
-     */
-    @Override
-    public EquipmentSlot getEquipmentType(ItemStack stack) {
-        return EquipmentSlot.CHEST;  // Default fallback, Curios will override
-    }
-
-    /**
-     * Check if the item can be equipped in the given slot type.
-     */
-    @Override
-    public boolean canEquipFromItemStack(ItemStack stack, net.minecraft.world.entity.EquipmentSlot slot) {
-        return super.canEquipFromItemStack(stack, slot);
-    }
-
-    /**
-     * Check if this item is compatible with Curios API.
-     * Returns true to allow Curios to manage equipping/unequipping.
-     */
-    @Override
-    public boolean canEquip(ItemStack stack, net.minecraft.world.entity.EquipmentSlot slot,
-                           LivingEntity entity) {
-        return true;  // Allow Curios API integration
     }
 
     /**
      * Called when the item is used on a block.
      */
     @Override
-    public InteractionResult useOn(UseOnBlockContext context) {
+    public InteractionResult useOn(UseOnContext context) {
         Player player = context.getPlayer();
         if (player != null && !player.level().isClientSide()) {
             // Open GUI when right-clicking with the item
@@ -210,9 +162,9 @@ public class HeroSigilItem extends Item {
      * Get the display name for tooltips.
      */
     @Override
-    public void appendHoverText(ItemStack stack, net.minecraft.core.Holder<Item> holder,
-                                net.minecraft.network.chat.Component.TooltipFlag flag,
-                                java.util.List<net.minecraft.network.chat.Component> tooltip) {
+    public void appendHoverText(ItemStack stack, Item.TooltipContext tooltipContext,
+                                java.util.List<net.minecraft.network.chat.Component> tooltip,
+                                TooltipFlag flag) {
         // Add tooltip text showing unlocked buffs
 
         // Show current buff status if player has data
@@ -234,15 +186,7 @@ public class HeroSigilItem extends Item {
             }
         }
 
-        super.appendHoverText(stack, holder, flag, tooltip);
-    }
-
-    /**
-     * Check if the item can be repaired with specific materials.
-     */
-    @Override
-    public boolean isRepairable(ItemStack stack) {
-        return true;  // Can be repaired (if durability is added later)
+        super.appendHoverText(stack, tooltipContext, tooltip, flag);
     }
 
 }

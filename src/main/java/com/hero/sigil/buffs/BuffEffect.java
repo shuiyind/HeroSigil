@@ -1,5 +1,6 @@
 package com.hero.sigil.buffs;
 
+import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -11,7 +12,7 @@ import net.minecraft.world.entity.player.Player;
 public class BuffEffect {
 
     private final String id;
-    private final MobEffect mobEffect;
+    private final Holder<MobEffect> mobEffect;
     private final int amplifier;
     private final int durationSeconds;
     private final boolean isPermanent;
@@ -31,7 +32,7 @@ public class BuffEffect {
     // 速度来源追踪（仅用于 SPEED buff，用于冲突处理）
     private boolean appliedByThisBuff = false;
 
-    public BuffEffect(String id, MobEffect mobEffect, int amplifier, int durationSeconds, boolean isPermanent) {
+    public BuffEffect(String id, Holder<MobEffect> mobEffect, int amplifier, int durationSeconds, boolean isPermanent) {
         this.id = id;
         this.mobEffect = mobEffect;
         this.amplifier = amplifier;
@@ -69,7 +70,6 @@ public class BuffEffect {
             // 处理永久 buff 的最大生命值变化
             if (mobEffect == MobEffects.HEALTH_BOOST) {
                 // 重新计算最大生命值
-                player.refreshMaxHealth();
 
                 // 调整当前生命值（不超过新最大值）
                 if (player.getHealth() > player.getMaxHealth()) {
@@ -117,9 +117,9 @@ public class BuffEffect {
         }
 
         // 加速 buff 冲突处理：不覆盖玩家已有的更强加速效果
-        if (mobEffect == MobEffects.SPEED) {
-            MobEffectInstance existingEffect = player.getEffect(mobEffect);
-            if (existingEffect != null && existingEffect.getAmplifier() > amplifier) {
+        if (mobEffect == MobEffects.MOVEMENT_SPEED) {
+            MobEffectInstance existingSpeedEffect = player.getEffect(mobEffect);
+            if (existingSpeedEffect != null && existingSpeedEffect.getAmplifier() > amplifier) {
                 com.hero.sigil.HeroSigil.LOGGER.debug("Skipping SPEED buff application, stronger effect already active");
                 return;
             }
@@ -143,12 +143,12 @@ public class BuffEffect {
         lastRefreshTick = currentTick;
 
         // 加速 buff 特殊处理：添加视觉反馈
-        if (mobEffect == MobEffects.SPEED) {
+        if (mobEffect == MobEffects.MOVEMENT_SPEED) {
             appliedByThisBuff = true;
 
             // 播放速度粒子效果（淡蓝色粒子）
             player.level().addParticle(
-                net.minecraft.core.particles.ParticleTypes.SLEEP,
+                net.minecraft.core.particles.ParticleTypes.CLOUD,
                 player.getX(), player.getY() + 0.5, player.getZ(),
                 0.0, 0.0, 0.0
             );
@@ -174,7 +174,6 @@ public class BuffEffect {
             // 处理永久 buff 的最大生命值恢复
             if (mobEffect == MobEffects.HEALTH_BOOST) {
                 // 重新计算最大生命值（移除生命提升）
-                player.refreshMaxHealth();
 
                 // 调整当前生命值（不超过新最大值）
                 if (player.getHealth() > player.getMaxHealth()) {
@@ -199,7 +198,7 @@ public class BuffEffect {
             }
 
             // 加速 buff 特殊处理
-            if (mobEffect == MobEffects.SPEED) {
+            if (mobEffect == MobEffects.MOVEMENT_SPEED) {
                 appliedByThisBuff = false;
 
                 // 播放速度移除粒子效果（云朵粒子）
@@ -264,7 +263,7 @@ public class BuffEffect {
     }
 
     public String getId() { return id; }
-    public MobEffect getMobEffect() { return mobEffect; }
+    public Holder<MobEffect> getMobEffect() { return mobEffect; }
     public int getAmplifier() { return amplifier; }
     public int getDurationSeconds() { return durationSeconds; }
     public boolean isPermanent() { return isPermanent; }
@@ -340,7 +339,7 @@ public class BuffEffect {
         // Slot 3: Speed - from DEFEAT_ENDER_DRAGON achievement
         buffs.add(new BuffEffect(
             "speed",
-            MobEffects.SPEED,
+            MobEffects.MOVEMENT_SPEED,
             1,      // +25% speed (amplifier level 0 = 20%, level 1 = 45%)
             30,     // Duration in seconds (re-applied periodically)
             false   // Not permanent - needs periodic refresh

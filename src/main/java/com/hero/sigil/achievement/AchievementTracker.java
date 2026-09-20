@@ -1,10 +1,11 @@
 package com.hero.sigil.achievement;
 
+import com.hero.sigil.HeroSigil;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.boss.BossDisplayData;
-import net.minecraft.world.entity.boss.WitherBoss;
-import net.minecraft.world.entity.monster.EnderDragon;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -31,7 +32,7 @@ public class AchievementTracker {
     private static final Map<String, PlayerProgress> PLAYER_PROGRESSES = new HashMap<>();
 
     // Track biome exploration per player (key: playerId -> set of biomes visited)
-    private static final Map<String, Set<ResourceKey<net.minecraft.world.level.Biome>>> BIOME_VISITS = new HashMap<>();
+    private static final Map<String, Set<ResourceKey<net.minecraft.world.level.biome.Biome>>> BIOME_VISITS = new HashMap<>();
 
     /**
      * Achievements that unlock buff slots on the Hero Sigil.
@@ -158,7 +159,7 @@ public class AchievementTracker {
                 player.getBlockX(),
                 player.getBlockY(),
                 player.getBlockZ(),
-                net.minecraft.sounds.SoundEvents.ACHIEVEMENT_GRANTED,
+                net.minecraft.sounds.SoundEvents.PLAYER_LEVELUP,
                 net.minecraft.sounds.SoundSource.PLAYERS,
                 1.0f,
                 1.0f
@@ -226,13 +227,13 @@ public class AchievementTracker {
      * Get or create player progress tracking.
      */
     private static PlayerProgress getPlayerProgress(Player player) {
-        String playerId = player.getStringUUID().toString();
+        String playerId = player.getUUID().toString();
         return PLAYER_PROGRESSES.computeIfAbsent(playerId, k -> new PlayerProgress());
     }
 
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Pre event) {
-        Player player = event.getPlayer();
+        Player player = event.getEntity();
 
         // Track biome exploration for EXPLORE_ALL_BIOMES achievement
         if (player instanceof ServerPlayer serverPlayer) {
@@ -241,10 +242,10 @@ public class AchievementTracker {
                 return;
             }
 
-            String playerId = player.getStringUUID().toString();
+            String playerId = player.getUUID().toString();
 
             // 已访问 50 个群系后停止记录（超过 20 已解锁成就）
-            Set<ResourceKey<net.minecraft.world.level.Biome>> visitedBiomes = BIOME_VISITS.get(playerId);
+            Set<ResourceKey<net.minecraft.world.level.biome.Biome>> visitedBiomes = BIOME_VISITS.get(playerId);
             if (visitedBiomes != null && visitedBiomes.size() >= 50) {
                 return;
             }
@@ -285,8 +286,8 @@ public class AchievementTracker {
     }
 
     @SubscribeEvent
-    public static void onPlayerLogout(PlayerEvent.LoggedOutEvent event) {
-        String playerId = event.getPlayer().getStringUUID().toString();
+    public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        String playerId = event.getEntity().getUUID().toString();
 
         // 清理群系访问数据
         BIOME_VISITS.remove(playerId);
@@ -343,30 +344,19 @@ public class AchievementTracker {
             return true;
         }
 
-        // 方法 2: 检查实体是否带有 BossDisplayData
-        BossDisplayData bossDisplay = entity.getType().getBossDisplayData();
-        if (bossDisplay != null) {
-            return true;
-        }
-
-        // 方法 3: 检查实体 ID 路径
-        var registryName = entity.getType().getDefaultRegistryName();
-        if (registryName != null) {
-            String path = registryName.getPath();
-            return switch (path) {
-                case "ender_dragon", "wither", "warden", "elder_guardian" -> true;
-                default -> false;
-            };
-        }
-
-        return false;
+        // 方法 2: 检查实体 ID 路径
+        String path = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getPath();
+        return switch (path) {
+            case "ender_dragon", "wither", "warden", "elder_guardian" -> true;
+            default -> false;
+        };
     }
 
     /**
      * Reset player progress (for testing or world reset).
      */
     public static void resetPlayerProgress(Player player) {
-        String playerId = player.getStringUUID().toString();
+        String playerId = player.getUUID().toString();
         PLAYER_PROGRESSES.remove(playerId);
         BIOME_VISITS.remove(playerId);
     }
@@ -375,7 +365,7 @@ public class AchievementTracker {
      * Get all unlocked achievements for a player.
      */
     public static Map<AchievementType, Boolean> getPlayerUnlockedAchievements(Player player) {
-        PlayerProgress progress = PLAYER_PROGRESSES.get(player.getStringUUID().toString());
+        PlayerProgress progress = PLAYER_PROGRESSES.get(player.getUUID().toString());
         return progress != null ? progress.getUnlockedAchievements() : new HashMap<>();
     }
 
@@ -383,7 +373,7 @@ public class AchievementTracker {
      * Check if a specific achievement is unlocked for the player.
      */
     public static boolean isAchievementUnlocked(Player player, AchievementType achievement) {
-        PlayerProgress progress = PLAYER_PROGRESSES.get(player.getStringUUID().toString());
+        PlayerProgress progress = PLAYER_PROGRESSES.get(player.getUUID().toString());
         return progress != null && progress.isUnlocked(achievement);
     }
 
@@ -391,7 +381,7 @@ public class AchievementTracker {
      * Force unlock an achievement for testing purposes.
      */
     public static void forceUnlockAchievement(Player player, AchievementType achievement) {
-        PlayerProgress progress = PLAYER_PROGRESSES.computeIfAbsent(player.getStringUUID().toString(), k -> new PlayerProgress());
+        PlayerProgress progress = PLAYER_PROGRESSES.computeIfAbsent(player.getUUID().toString(), k -> new PlayerProgress());
         progress.unlock(achievement, player);
     }
 
@@ -409,7 +399,7 @@ public class AchievementTracker {
      * Get the number of unlocked achievements for a player.
      */
     public static int getUnlockedCount(Player player) {
-        PlayerProgress progress = PLAYER_PROGRESSES.get(player.getStringUUID().toString());
+        PlayerProgress progress = PLAYER_PROGRESSES.get(player.getUUID().toString());
         if (progress == null) return 0;
 
         long count = progress.getUnlockedAchievements().values().stream()
@@ -430,16 +420,39 @@ public class AchievementTracker {
      * 获取当前群系访问计数（用于调试/测试）
      */
     public static int getBiomeVisitCount(Player player) {
-        String playerId = player.getStringUUID().toString();
-        Set<ResourceKey<net.minecraft.world.level.Biome>> biomes = BIOME_VISITS.get(playerId);
+        String playerId = player.getUUID().toString();
+        Set<ResourceKey<net.minecraft.world.level.biome.Biome>> biomes = BIOME_VISITS.get(playerId);
         return biomes != null ? biomes.size() : 0;
+    }
+
+    /**
+     * Get the boss kill count for a player.
+     */
+    public static int getBossKillCount(Player player) {
+        PlayerProgress progress = PLAYER_PROGRESSES.get(player.getUUID().toString());
+        return progress != null ? progress.getBossKillCount() : 0;
+    }
+
+    /**
+     * Get the number of distinct biomes visited by a player.
+     */
+    public static int getExploredBiomeCount(Player player) {
+        Set<ResourceKey<net.minecraft.world.level.biome.Biome>> biomes = BIOME_VISITS.get(player.getUUID().toString());
+        return biomes != null ? biomes.size() : 0;
+    }
+
+    /**
+     * Total biomes required to unlock the exploration achievement.
+     */
+    public static int getTotalBiomeCount(Player player) {
+        return 20;
     }
 
     /**
      * 显示玩家的成就历史
      */
     public static void showAchievements(Player player) {
-        PlayerProgress progress = PLAYER_PROGRESSES.get(player.getStringUUID().toString());
+        PlayerProgress progress = PLAYER_PROGRESSES.get(player.getUUID().toString());
         if (progress != null) {
             progress.showAchievementHistory(player);
         } else {
@@ -453,7 +466,7 @@ public class AchievementTracker {
      * Clear all biome visit data (for testing).
      */
     public static void clearBiomeVisits(Player player) {
-        String playerId = player.getStringUUID().toString();
+        String playerId = player.getUUID().toString();
         BIOME_VISITS.remove(playerId);
     }
 }

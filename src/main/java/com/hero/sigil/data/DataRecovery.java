@@ -2,6 +2,7 @@ package com.hero.sigil.data;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.ArrayList;
@@ -194,7 +195,7 @@ public class DataRecovery {
     /**
      * 检查 buff 状态与 NBT 数据是否一致
      */
-    public static boolean checkDataConsistency(Player player) {
+    public static boolean checkDataConsistency(ServerPlayer player) {
         CompoundTag persistData = player.getPersistentData();
         if (!persistData.contains(TAG_KEY)) {
             return false;
@@ -227,7 +228,7 @@ public class DataRecovery {
     /**
      * 自动修复数据不一致
      */
-    public static void fixDataInconsistency(Player player) {
+    public static void fixDataInconsistency(ServerPlayer player) {
         CompoundTag persistData = player.getPersistentData();
         if (!persistData.contains(TAG_KEY)) {
             return;
@@ -296,7 +297,7 @@ public class DataRecovery {
     /**
      * 显示备份信息
      */
-    public static void showBackupInfo(Player player) {
+    public static void showBackupInfo(ServerPlayer player) {
         CompoundTag persistData = player.getPersistentData();
 
         if (!persistData.contains("HeroSigil")) {

@@ -1,18 +1,35 @@
 package com.hero.sigil.network;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.network.RegisterPayloadHandlersCallback;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * Packet for synchronizing buff slot states between client and server.
  */
-@EventBusSubscriber(modid = "herosigil", bus = EventBusSubscriber.Bus.GAME)
-public class BuffSlotSyncPacket {
+public class BuffSlotSyncPacket implements CustomPacketPayload {
 
-    public static final String TYPE_ID = "buff_slot_sync";
+    public static final CustomPacketPayload.Type<BuffSlotSyncPacket> TYPE =
+        new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("herosigil", "buff_slot_sync"));
+
+    public static final StreamCodec<FriendlyByteBuf, BuffSlotSyncPacket> STREAM_CODEC = StreamCodec.of(
+        (FriendlyByteBuf buf, BuffSlotSyncPacket packet) -> {
+            buf.writeInt(packet.playerId);
+            for (int i = 0; i < 3; i++) {
+                buf.writeInt(i < packet.buffStates.length ? packet.buffStates[i] : 0);
+            }
+        },
+        buf -> {
+            int playerId = buf.readInt();
+            int[] buffStates = new int[3];
+            for (int i = 0; i < 3; i++) {
+                buffStates[i] = buf.readInt();
+            }
+            return new BuffSlotSyncPacket(playerId, buffStates);
+        }
+    );
 
     private final int playerId;
     private final int[] buffStates;
@@ -22,41 +39,9 @@ public class BuffSlotSyncPacket {
         this.buffStates = java.util.Arrays.copyOf(pbuffStates, 3);
     }
 
-    /**
-     * Register the payload handler.
-     */
-    @SubscribeEvent
-    public static void register(RegisterPayloadHandlersCallback event) {
-        // The packet type registration will be handled by NeoForge automatically
-    }
-
-    /**
-     * Encode the packet data for network transmission.
-     */
-    public void toBytes(FriendlyByteBuf pBuffer) {
-        pBuffer.writeInt(this.playerId);
-
-        for (int i = 0; i < 3; i++) {
-            if (i < this.buffStates.length) {
-                pBuffer.writeInt(this.buffStates[i]);
-            } else {
-                pBuffer.writeInt(0);
-            }
-        }
-    }
-
-    /**
-     * Decode the packet data from network reception.
-     */
-    public static BuffSlotSyncPacket fromBytes(FriendlyByteBuf pBuffer) {
-        int playerId = pBuffer.readInt();
-        int[] buffStates = new int[3];
-
-        for (int i = 0; i < 3; i++) {
-            buffStates[i] = pBuffer.readInt();
-        }
-
-        return new BuffSlotSyncPacket(playerId, buffStates);
+    @Override
+    public Type<BuffSlotSyncPacket> type() {
+        return TYPE;
     }
 
     /**
@@ -67,8 +52,6 @@ public class BuffSlotSyncPacket {
         pContext.enqueueWork(() -> {
             updateClientBuffStates(pPacket.playerId, pPacket.buffStates);
         });
-
-        // Acknowledge receipt (optional)
     }
 
     private static void updateClientBuffStates(int pPlayerId, int[] pbuffStates) {
@@ -77,8 +60,6 @@ public class BuffSlotSyncPacket {
         if (minecraft.player != null && minecraft.player.getId() == pPlayerId) {
             // Update the current player's buff slots in the GUI menu
             if (minecraft.screen instanceof com.hero.sigil.gui.screen.HeroSigilScreen screen) {
-                var menu = screen.getMenu();
-
                 for (int i = 0; i < Math.min(3, pbuffStates.length); i++) {
                     int state = pbuffStates[i];
                     boolean unlocked = (state & 0x1) != 0; // Bit 0: unlocked flag
@@ -93,7 +74,7 @@ public class BuffSlotSyncPacket {
     private static void updateBuffSlotInScreen(com.hero.sigil.gui.screen.HeroSigilScreen pScreen,
                                                int pSlotIndex, boolean pUnlocked,
                                                boolean pActive) {
-        // TODO: Get the specific buff slot widget and update its state
+        // Update the specific buff slot widget state
         switch (pSlotIndex) {
             case 0:
                 if (pScreen.buffSlot1 != null) {

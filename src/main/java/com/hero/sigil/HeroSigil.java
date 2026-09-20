@@ -1,10 +1,12 @@
 package com.hero.sigil;
 
+import com.hero.sigil.registry.ModRegistries;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -23,6 +25,10 @@ public class HeroSigil {
     public static final String MODID = "herosigil";
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
+
+    // Deferred Register for Creative Mode Tabs
+    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
+        DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
 
     // Deferred Register for Items (including the Hero Sigil accessory)
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
@@ -63,8 +69,6 @@ public class HeroSigil {
         // Initialization task is called when the mod is being initialized
         modEventBus.addListener(this::commonSetup);
 
-        // Register network handlers
-        modEventBus.addListener(com.hero.sigil.network.HeroSigilNetworkManager::registerHandlers);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

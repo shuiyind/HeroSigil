@@ -2,7 +2,6 @@ package com.hero.sigil.gui.menu;
 
 import com.hero.sigil.registry.ModRegistries;
 
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -27,10 +26,6 @@ public class HeroSigilMenu extends AbstractContainerMenu {
         this(pContainerId, pPlayerInventory, ItemStack.EMPTY);
     }
 
-    public HeroSigilMenu(int pContainerId, Inventory pPlayerInventory, FriendlyByteBuf data) {
-        this(pContainerId, pPlayerInventory, data.readItem());
-    }
-
     public HeroSigilMenu(int pContainerId, Inventory pPlayerInventory, ItemStack pSigilStack) {
         super(ModRegistries.HERO_SIGIL_MENU.get(), pContainerId);
 
@@ -39,7 +34,7 @@ public class HeroSigilMenu extends AbstractContainerMenu {
 
         // Setup player inventory slots (standard Minecraft layout)
         int playerInvStartX = 8;
-        int playerInvStartY = this.imageHeight - 96 + 4;
+        int playerInvStartY = 180 - 96 + 4; // GUI texture height is 180
 
         // Main inventory rows
         for (int i = 0; i < 3; ++i) {
@@ -76,23 +71,33 @@ public class HeroSigilMenu extends AbstractContainerMenu {
      */
     @Override
     public boolean stillValid(net.minecraft.world.entity.player.Player pPlayer) {
-        return stillValid(this, pPlayer, ModRegistries.HERO_SIGIL_MENU.get());
-    }
-
-    /**
-     * Called when an item is clicked in the inventory.
-     */
-    @Override
-    public ItemStack quickCraft(int pSlotId, int pMouseButton, int pClickTypeCount, net.minecraft.world.entity.player.Player pPlayer) {
-        return super.quickCraft(pSlotId, pMouseButton, pClickTypeCount, pPlayer);
+        return pPlayer.getInventory().items.stream()
+            .anyMatch(stack -> stack.is(ModRegistries.HERO_SIGIL.get()));
     }
 
     /**
      * Called when an item is dropped from the inventory.
      */
     @Override
-    public ItemStack quickMoveScale(net.minecraft.world.entity.player.Player pPlayer, int pIndex) {
-        return super.quickMove(pPlayer, pIndex);
+    public ItemStack quickMoveStack(net.minecraft.world.entity.player.Player pPlayer, int pIndex) {
+        net.minecraft.world.inventory.Slot slot = this.slots.get(pIndex);
+        if (!slot.hasItem()) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack stack = slot.getItem();
+        ItemStack original = stack.copy();
+        boolean moved = pIndex < 9
+            ? this.moveItemStackTo(stack, 9, 36, false)
+            : this.moveItemStackTo(stack, 0, 9, false);
+
+        if (stack.isEmpty()) {
+            slot.set(ItemStack.EMPTY);
+        } else {
+            slot.setChanged();
+        }
+
+        return moved ? original : ItemStack.EMPTY;
     }
 
     /**
@@ -101,9 +106,9 @@ public class HeroSigilMenu extends AbstractContainerMenu {
     public boolean isBuffSlotUnlocked(int slotId) {
         // TODO: Read from NBT data or achievement tracker
         switch (slotId) {
-            case BUFF_SLOT_1: return this.sigilStack.getOrCreateTag().getInt("buff_slot_1_unlocked") == 1;
-            case BUFF_SLOT_2: return this.sigilStack.getOrCreateTag().getInt("buff_slot_2_unlocked") == 1;
-            case BUFF_SLOT_3: return this.sigilStack.getOrCreateTag().getInt("buff_slot_3_unlocked") == 1;
+            case BUFF_SLOT_1: return this.sigilTagInt("buff_slot_1_unlocked") == 1;
+            case BUFF_SLOT_2: return this.sigilTagInt("buff_slot_2_unlocked") == 1;
+            case BUFF_SLOT_3: return this.sigilTagInt("buff_slot_3_unlocked") == 1;
             default: return false;
         }
     }
@@ -114,20 +119,31 @@ public class HeroSigilMenu extends AbstractContainerMenu {
     public int getActiveBuff(int slotId) {
         // TODO: Read from NBT data
         switch (slotId) {
-            case BUFF_SLOT_1: return this.sigilStack.getOrCreateTag().getInt("buff_slot_1_active");
-            case BUFF_SLOT_2: return this.sigilStack.getOrCreateTag().getInt("buff_slot_2_active");
-            case BUFF_SLOT_3: return this.sigilStack.getOrCreateTag().getInt("buff_slot_3_active");
+            case BUFF_SLOT_1: return this.sigilTagInt("buff_slot_1_active");
+            case BUFF_SLOT_2: return this.sigilTagInt("buff_slot_2_active");
+            case BUFF_SLOT_3: return this.sigilTagInt("buff_slot_3_active");
             default: return 0;
         }
     }
 
     /**
+     * Read an int from the item's custom data component.
+     */
+    private int sigilTagInt(String key) {
+        net.minecraft.world.item.component.CustomData data = this.sigilStack.getOrDefault(
+            net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+            net.minecraft.world.item.component.CustomData.EMPTY
+        );
+        return data.copyTag().getInt(key);
+    }
+
+    /**
      * Factory method to create menu type.
      */
-    public static class Factory implements net.minecraft.world.inventory.MenuType.FriendlyByteBufFactory<HeroSigilMenu> {
+    public static class Factory implements net.minecraft.world.inventory.MenuType.MenuSupplier<HeroSigilMenu> {
         @Override
-        public HeroSigilMenu create(int pContainerId, Inventory pInventory, FriendlyByteBuf pBuffer) {
-            return new HeroSigilMenu(pContainerId, pInventory, pBuffer);
+        public HeroSigilMenu create(int pContainerId, Inventory pInventory) {
+            return new HeroSigilMenu(pContainerId, pInventory);
         }
     }
 }

@@ -1,11 +1,27 @@
 package com.hero.sigil.network;
 
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * Packet to toggle a buff slot (activate/deactivate) from client to server.
  */
-public class CPacketToggleBuffSlot {
+public class CPacketToggleBuffSlot implements CustomPacketPayload {
+
+    public static final CustomPacketPayload.Type<CPacketToggleBuffSlot> TYPE =
+        new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("herosigil", "toggle_buff_slot"));
+
+    public static final StreamCodec<FriendlyByteBuf, CPacketToggleBuffSlot> STREAM_CODEC = StreamCodec.of(
+        (FriendlyByteBuf buf, CPacketToggleBuffSlot packet) -> {
+            buf.writeInt(packet.playerId);
+            buf.writeInt(packet.slotIndex);
+        },
+        buf -> new CPacketToggleBuffSlot(buf.readInt(), buf.readInt())
+    );
 
     private final int playerId;
     private final int slotIndex; // 0, 1, or 2
@@ -15,21 +31,9 @@ public class CPacketToggleBuffSlot {
         this.slotIndex = pSlotIndex;
     }
 
-    /**
-     * Encode packet data for network transmission.
-     */
-    public void toBytes(net.minecraft.network.FriendlyByteBuf pBuffer) {
-        pBuffer.writeInt(this.playerId);
-        pBuffer.writeInt(this.slotIndex);
-    }
-
-    /**
-     * Decode packet data from network reception.
-     */
-    public static CPacketToggleBuffSlot fromBytes(net.minecraft.network.FriendlyByteBuf pBuffer) {
-        int playerId = pBuffer.readInt();
-        int slotIndex = pBuffer.readInt();
-        return new CPacketToggleBuffSlot(playerId, slotIndex);
+    @Override
+    public Type<CPacketToggleBuffSlot> type() {
+        return TYPE;
     }
 
     /**
@@ -38,10 +42,11 @@ public class CPacketToggleBuffSlot {
     public static void handle(CPacketToggleBuffSlot pPacket, IPayloadContext pContext) {
         // Queue work to main thread
         pContext.enqueueWork(() -> {
-            net.minecraft.server.level.ServerPlayer player =
-                (net.minecraft.server.level.ServerPlayer) pContext.player();
+            if (!(pContext.player() instanceof ServerPlayer player)) {
+                return;
+            }
 
-            if (player != null && pPacket.slotIndex >= 0 && pPacket.slotIndex < 3) {
+            if (pPacket.slotIndex >= 0 && pPacket.slotIndex < 3) {
                 // Toggle the buff slot on server side
                 com.hero.sigil.buffs.HeroSigilData.activateSlot(player, pPacket.slotIndex);
 
@@ -50,7 +55,7 @@ public class CPacketToggleBuffSlot {
                     player.getId(),
                     com.hero.sigil.buffs.HeroSigilData.getBuffStatesArray(player)
                 );
-                HeroSigilNetworkManager.sendToPlayer(syncPacket, (ServerPlayer) player);
+                HeroSigilNetworkManager.sendToPlayer(syncPacket, player);
             }
         });
     }

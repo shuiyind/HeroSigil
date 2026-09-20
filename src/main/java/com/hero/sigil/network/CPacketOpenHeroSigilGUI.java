@@ -2,12 +2,23 @@ package com.hero.sigil.network;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * Packet to open the Hero Sigil GUI from server to client.
  */
-public class CPacketOpenHeroSigilGUI {
+public class CPacketOpenHeroSigilGUI implements CustomPacketPayload {
+
+    public static final CustomPacketPayload.Type<CPacketOpenHeroSigilGUI> TYPE =
+        new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("herosigil", "open_herosigil_gui"));
+
+    public static final StreamCodec<FriendlyByteBuf, CPacketOpenHeroSigilGUI> STREAM_CODEC = StreamCodec.of(
+        (FriendlyByteBuf buf, CPacketOpenHeroSigilGUI packet) -> buf.writeInt(packet.playerId),
+        buf -> new CPacketOpenHeroSigilGUI(buf.readInt())
+    );
 
     private final int playerId;
 
@@ -15,19 +26,9 @@ public class CPacketOpenHeroSigilGUI {
         this.playerId = pPlayerId;
     }
 
-    /**
-     * Encode packet data for network transmission.
-     */
-    public void toBytes(FriendlyByteBuf pBuffer) {
-        pBuffer.writeInt(this.playerId);
-    }
-
-    /**
-     * Decode packet data from network reception.
-     */
-    public static CPacketOpenHeroSigilGUI fromBytes(FriendlyByteBuf pBuffer) {
-        int playerId = pBuffer.readInt();
-        return new CPacketOpenHeroSigilGUI(playerId);
+    @Override
+    public Type<CPacketOpenHeroSigilGUI> type() {
+        return TYPE;
     }
 
     /**

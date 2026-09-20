@@ -2,6 +2,7 @@ package com.hero.sigil.gui.screen;
 
 import com.hero.sigil.HeroSigil;
 import com.hero.sigil.buffs.BuffEffect;
+import com.hero.sigil.gui.menu.HeroSigilMenu;
 import com.hero.sigil.gui.widget.BuffSlotWidget;
 
 import net.minecraft.client.Minecraft;
@@ -23,9 +24,9 @@ public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
     );
 
     // UI components
-    private BuffSlotWidget buffSlot1;
-    private BuffSlotWidget buffSlot2;
-    private BuffSlotWidget buffSlot3;
+    public BuffSlotWidget buffSlot1;
+    public BuffSlotWidget buffSlot2;
+    public BuffSlotWidget buffSlot3;
 
     private Button closeButton;
     private Component titleText = Component.translatable("container.herosigil.title");
@@ -95,12 +96,12 @@ public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
 
         // Reposition close button
         if (closeButton != null) {
-            closeButton.setPos(this.width / 2 - 50, this.height - 30);
+            closeButton.setPosition(this.width / 2 - 50, this.height - 30);
         }
     }
 
     @Override
-    protected void drawBg(GuiGraphics guiGraphics, float pPartialTickTime, int pMouseX, int pMouseY) {
+    protected void renderBg(GuiGraphics guiGraphics, float pPartialTickTime, int pMouseX, int pMouseY) {
         // Draw background texture
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;

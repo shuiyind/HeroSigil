@@ -22,14 +22,14 @@ public class BuffSlotWidget extends AbstractButton {
     }
 
     @Override
-    public void onClick(double pMouseX, double pMouseY) {
+    public void onPress() {
         if (this.unlocked && !this.active) {
             // Slot is unlocked but not active - activate it
 
-            Minecraft.getInstance().getSoundSource().play(
-                net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK_PRESS,
-                net.minecraft.client.resources.sounds.SimpleSoundInstance.defaultVolume()
-            );
+            Minecraft.getInstance().getSoundManager().play(
+
+
+                net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
 
             this.setActive(true);
 
@@ -40,15 +40,15 @@ public class BuffSlotWidget extends AbstractButton {
                         Minecraft.getInstance().player.getId(),
                         this.slotId
                     );
-                net.neoforged.neoforge.network.NetworkHooks.sendToServer(packet);
+                net.neoforged.neoforge.network.PacketDistributor.sendToServer(packet);
             }
         } else if (this.unlocked && this.active) {
             // Slot is active - deactivate it
 
-            Minecraft.getInstance().getSoundSource().play(
-                net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK_RELEASE,
-                net.minecraft.client.resources.sounds.SimpleSoundInstance.defaultVolume()
-            );
+            Minecraft.getInstance().getSoundManager().play(
+
+
+                net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
 
             this.setActive(false);
 
@@ -59,7 +59,7 @@ public class BuffSlotWidget extends AbstractButton {
                         Minecraft.getInstance().player.getId(),
                         this.slotId
                     );
-                net.neoforged.neoforge.network.NetworkHooks.sendToServer(packet);
+                net.neoforged.neoforge.network.PacketDistributor.sendToServer(packet);
             }
         }
     }
@@ -112,15 +112,12 @@ public class BuffSlotWidget extends AbstractButton {
 
         // Draw tooltip on hover
         if (this.isHovered()) {
-            net.minecraft.client.gui.components.Tooltip tooltip = getTooltip();
-            if (tooltip != null) {
-                guiGraphics.renderTooltip(
-                    minecraft.font,
-                    this.getTooltip().getVisualOrder(),
-                    pMouseX - this.getX(),
-                    pMouseY - this.getY()
-                );
-            }
+            guiGraphics.renderTooltip(
+                minecraft.font,
+                this.getTooltip().toCharSequence(minecraft),
+                pMouseX - this.getX(),
+                pMouseY - this.getY()
+            );
         }
     }
 
@@ -138,16 +135,16 @@ public class BuffSlotWidget extends AbstractButton {
             float radius = Math.min(this.getWidth(), this.getHeight()) / 3 - 2;
 
             // 脉冲动画效果 - 基于帧时间计算 alpha 值
-            long gameTime = minecraft.getFrameTime();
+            long gameTime = System.currentTimeMillis();
             float pulseAlpha = 0.3f + 0.1f * (float) Math.sin(gameTime / 200.0);
             int goldColorWithAlpha = (int) (0xFFD4AF37 & 0x00FFFFFF) | (int) (0xFF * (0.5f + pulseAlpha * 0.5f)) << 24;
 
             // 绘制带脉冲效果的金色外环
-            guiGraphics.fillCircle(centerX, centerY, radius + 1, goldColorWithAlpha);
+            this.drawCircle(guiGraphics, centerX, centerY, radius + 1, goldColorWithAlpha);
 
             // 绘制内部填充色
             int fillColor = getBuffColor(this.slotId);
-            guiGraphics.fillCircle(centerX, centerY, radius - 1, fillColor);
+            this.drawCircle(guiGraphics, centerX, centerY, radius - 1, fillColor);
 
             // 根据 Buff 类型绘制专属图标
             com.hero.sigil.achievement.AchievementTracker.AchievementType achievement =
@@ -164,36 +161,37 @@ public class BuffSlotWidget extends AbstractButton {
         float size = radius * 0.6f;
 
         switch (type) {
-            case HEALTH_BOOST:
+            case EXPLORE_ALL_BIOMES:
                 // 绘制心形 - 红色
                 int heartColor = 0xFFE74C3C;
-                guiGraphics.fillCircle(centerX - size * 0.3f, centerY - size * 0.2f, size * 0.4f, heartColor);
-                guiGraphics.fillCircle(centerX + size * 0.3f, centerY - size * 0.2f, size * 0.4f, heartColor);
-                guiGraphics.fillTriangle(centerX - size * 0.5f, centerY,
+                this.drawCircle(guiGraphics, centerX - size * 0.3f, centerY - size * 0.2f, size * 0.4f, heartColor);
+                this.drawCircle(guiGraphics, centerX + size * 0.3f, centerY - size * 0.2f, size * 0.4f, heartColor);
+                this.drawTriangle(guiGraphics, centerX - size * 0.5f, centerY,
                                         centerX + size * 0.5f, centerY,
                                         centerX, centerY + size * 0.7f, heartColor);
                 break;
 
-            case SPEED_BOOST:
+            case DEFEAT_ENDER_DRAGON:
                 // 绘制闪电 - 蓝色
                 int lightningColor = 0xFF3498DB;
-                guiGraphics.fillTriangle(centerX - size * 0.1f, centerY - size * 0.7f,
+                this.drawTriangle(guiGraphics, centerX - size * 0.1f, centerY - size * 0.7f,
                                         centerX + size * 0.1f, centerY - size * 0.7f,
                                         centerX - size * 0.05f, centerY - size * 0.3f, lightningColor);
-                guiGraphics.fillTriangle(centerX - size * 0.05f, centerY - size * 0.3f,
+                this.drawTriangle(guiGraphics, centerX - size * 0.05f, centerY - size * 0.3f,
                                         centerX + size * 0.15f, centerY - size * 0.3f,
                                         centerX - size * 0.1f, centerY, lightningColor);
-                guiGraphics.fillTriangle(centerX - size * 0.1f, centerY,
+                this.drawTriangle(guiGraphics, centerX - size * 0.1f, centerY,
                                         centerX + size * 0.1f, centerY,
                                         centerX, centerY + size * 0.6f, lightningColor);
                 break;
 
-            case SATURATION:
-            case REGENERATION:
+            case DEFEAT_BOSS:
+            case BUILD_REDSTONE_MACHINE:
+            case COMPLETE_COLLECTION:
                 // 绘制盾牌 - 绿色
                 int shieldColor = 0xFF2ECC71;
-                guiGraphics.fillCircle(centerX, centerY - size * 0.2f, size * 0.5f, shieldColor);
-                guiGraphics.fillTriangle(centerX - size * 0.5f, centerY - size * 0.2f,
+                this.drawCircle(guiGraphics, centerX, centerY - size * 0.2f, size * 0.5f, shieldColor);
+                this.drawTriangle(guiGraphics, centerX - size * 0.5f, centerY - size * 0.2f,
                                         centerX + size * 0.5f, centerY - size * 0.2f,
                                         centerX, centerY + size * 0.6f, shieldColor);
                 break;
@@ -201,7 +199,7 @@ public class BuffSlotWidget extends AbstractButton {
             default:
                 // 默认绘制星形 - 金色
                 int starColor = 0xFFFFD700;
-                guiGraphics.fillCircle(centerX, centerY, size * 0.4f, starColor);
+                this.drawCircle(guiGraphics, centerX, centerY, size * 0.4f, starColor);
         }
     }
 
@@ -214,11 +212,11 @@ public class BuffSlotWidget extends AbstractButton {
 
         // 心形由两个圆形和一个三角形组成
         // 左上半圆
-        guiGraphics.fillCircle(centerX - size * 0.3f, centerY - size * 0.3f, size * 0.5f, heartColor);
+        this.drawCircle(guiGraphics, centerX - size * 0.3f, centerY - size * 0.3f, size * 0.5f, heartColor);
         // 右上半圆
-        guiGraphics.fillCircle(centerX + size * 0.3f, centerY - size * 0.3f, size * 0.5f, heartColor);
+        this.drawCircle(guiGraphics, centerX + size * 0.3f, centerY - size * 0.3f, size * 0.5f, heartColor);
         // 下半部分 (三角形)
-        guiGraphics.fillTriangle(centerX - size * 0.5f, centerY - size * 0.1f,
+        this.drawTriangle(guiGraphics, centerX - size * 0.5f, centerY - size * 0.1f,
                                 centerX + size * 0.5f, centerY - size * 0.1f,
                                 centerX, centerY + size * 0.6f, heartColor);
     }
@@ -232,15 +230,15 @@ public class BuffSlotWidget extends AbstractButton {
 
         // 闪电图标 - 由多个三角形拼接而成
         // 上部
-        guiGraphics.fillTriangle(centerX - size * 0.1f, centerY - size * 0.7f,
+        this.drawTriangle(guiGraphics, centerX - size * 0.1f, centerY - size * 0.7f,
                                 centerX + size * 0.1f, centerY - size * 0.7f,
                                 centerX, centerY - size * 0.3f, lightningColor);
         // 中部
-        guiGraphics.fillTriangle(centerX - size * 0.15f, centerY - size * 0.2f,
+        this.drawTriangle(guiGraphics, centerX - size * 0.15f, centerY - size * 0.2f,
                                 centerX + size * 0.15f, centerY - size * 0.2f,
                                 centerX, centerY + size * 0.1f, lightningColor);
         // 下部
-        guiGraphics.fillTriangle(centerX - size * 0.2f, centerY + size * 0.15f,
+        this.drawTriangle(guiGraphics, centerX - size * 0.2f, centerY + size * 0.15f,
                                 centerX + size * 0.2f, centerY + size * 0.15f,
                                 centerX, centerY + size * 0.5f, lightningColor);
     }
@@ -254,9 +252,9 @@ public class BuffSlotWidget extends AbstractButton {
 
         // 盾牌形状 - 由一个圆形和一个三角形组成
         // 上部圆形
-        guiGraphics.fillCircle(centerX, centerY - size * 0.2f, size * 0.6f, shieldColor);
+        this.drawCircle(guiGraphics, centerX, centerY - size * 0.2f, size * 0.6f, shieldColor);
         // 下部三角形
-        guiGraphics.fillTriangle(centerX - size * 0.6f, centerY - size * 0.2f,
+        this.drawTriangle(guiGraphics, centerX - size * 0.6f, centerY - size * 0.2f,
                                 centerX + size * 0.6f, centerY - size * 0.2f,
                                 centerX, centerY + size * 0.6f, shieldColor);
     }
@@ -265,23 +263,23 @@ public class BuffSlotWidget extends AbstractButton {
      * 绘制脉冲动画边框 (激活状态)
      */
     private void drawAnimatedBorder(GuiGraphics guiGraphics, Minecraft minecraft) {
-        long gameTime = minecraft.getFrameTime();
+        long gameTime = System.currentTimeMillis();
         float pulseAlpha = 0.5f + 0.3f * (float) Math.sin(gameTime / 150.0);
 
         // 金色边框带脉冲 alpha 效果
         int borderColor = (int) (0xFFD700 & 0x00FFFFFF) | (int) (0xFF * pulseAlpha) << 24;
 
         // 绘制外层脉冲光晕 (在槽位外侧 1 像素)
-        guiGraphics.strokeLine(this.getX() - 1, this.getY() - 1,
+        this.drawLine(guiGraphics, this.getX() - 1, this.getY() - 1,
             this.getX() + this.getWidth() + 1, this.getY() - 1,
             borderColor);
-        guiGraphics.strokeLine(this.getX() - 1, this.getY() + this.getHeight() + 1,
+        this.drawLine(guiGraphics, this.getX() - 1, this.getY() + this.getHeight() + 1,
             this.getX() + this.getWidth() + 1, this.getY() + this.getHeight() + 1,
             borderColor);
-        guiGraphics.strokeLine(this.getX() - 1, this.getY(),
+        this.drawLine(guiGraphics, this.getX() - 1, this.getY(),
             this.getX() - 1, this.getY() + this.getHeight(),
             borderColor);
-        guiGraphics.strokeLine(this.getX() + this.getWidth() + 1, this.getY(),
+        this.drawLine(guiGraphics, this.getX() + this.getWidth() + 1, this.getY(),
             this.getX() + this.getWidth() + 1, this.getY() + this.getHeight(),
             borderColor);
     }
@@ -292,16 +290,16 @@ public class BuffSlotWidget extends AbstractButton {
     private void drawSimpleBorder(GuiGraphics guiGraphics, boolean unlocked) {
         int borderColor = unlocked ? 0xFFFFFFFF : 0xFF444444;
 
-        guiGraphics.strokeLine(this.getX(), this.getY(),
+        this.drawLine(guiGraphics, this.getX(), this.getY(),
             this.getX() + this.getWidth(), this.getY(),
             borderColor);
-        guiGraphics.strokeLine(this.getX(), this.getY() + this.getHeight(),
+        this.drawLine(guiGraphics, this.getX(), this.getY() + this.getHeight(),
             this.getX() + this.getWidth(), this.getY() + this.getHeight(),
             borderColor);
-        guiGraphics.strokeLine(this.getX(), this.getY(),
+        this.drawLine(guiGraphics, this.getX(), this.getY(),
             this.getX(), this.getY() + this.getHeight(),
             borderColor);
-        guiGraphics.strokeLine(this.getX() + this.getWidth(), this.getY(),
+        this.drawLine(guiGraphics, this.getX() + this.getWidth(), this.getY(),
             this.getX() + this.getWidth(), this.getY() + this.getHeight(),
             borderColor);
     }
@@ -315,13 +313,13 @@ public class BuffSlotWidget extends AbstractButton {
         // 锁体 (矩形)
         int lockWidth = (int) (size * 0.8f);
         int lockHeight = (int) (size * 0.6f);
-        guiGraphics.fill(centerX - lockWidth / 2, centerY - lockHeight / 4,
-                        centerX + lockWidth / 2, centerY + lockHeight / 4,
+        guiGraphics.fill((int) (centerX - lockWidth / 2), (int) (centerY - lockHeight / 4),
+                        (int) (centerX + lockWidth / 2), (int) (centerY + lockHeight / 4),
                         lockColor);
 
         // 锁环 (半圆形)
         int ringRadius = (int) (size * 0.3f);
-        guiGraphics.fillCircle(centerX, centerY - lockHeight / 4, ringRadius, lockColor);
+        this.drawCircle(guiGraphics, centerX, centerY - lockHeight / 4, ringRadius, lockColor);
     }
 
     /**
@@ -349,14 +347,14 @@ public class BuffSlotWidget extends AbstractButton {
             // 根据成就类型显示对应进度
             switch (achievement) {
                 case DEFEAT_BOSS:
-                    int bossKills = com.hero.sigil.achievement.AchievementTracker.getInstance().getBossKillCount();
+                    int bossKills = com.hero.sigil.achievement.AchievementTracker.getBossKillCount(Minecraft.getInstance().player);
                     progressLines.add(Component.translatable("tooltip.herosigil.progress",
                         bossKills, 10)); // 假设需要击杀 10 个 Boss
                     break;
 
                 case EXPLORE_ALL_BIOMES:
-                    int exploredBiomes = com.hero.sigil.achievement.AchievementTracker.getInstance().getExploredBiomeCount();
-                    int totalBiomes = com.hero.sigil.achievement.AchievementTracker.getInstance().getTotalBiomeCount();
+                    int exploredBiomes = com.hero.sigil.achievement.AchievementTracker.getExploredBiomeCount(Minecraft.getInstance().player);
+                    int totalBiomes = com.hero.sigil.achievement.AchievementTracker.getTotalBiomeCount(Minecraft.getInstance().player);
                     if (totalBiomes > 0) {
                         progressLines.add(Component.translatable("tooltip.herosigil.progress",
                             exploredBiomes, totalBiomes));
@@ -400,9 +398,9 @@ public class BuffSlotWidget extends AbstractButton {
                 if (this.slotId >= 0 && this.slotId < Math.min(buffs.size(), 3)) {
                     com.hero.sigil.buffs.BuffEffect buff = buffs.get(this.slotId);
                     // Get the localized name from MobEffect's translation key
-                    net.minecraft.world.effect.MobEffect effect = buff.getMobEffect();
+                    net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect = buff.getMobEffect();
                     if (effect != null) {
-                        baseComponent = Component.translatable(effect.getDescriptionId()).withStyle(net.minecraft.network.chat.Style.EMPTY.withBold(true));
+                        baseComponent = Component.translatable(effect.value().getDescriptionId()).withStyle(net.minecraft.network.chat.Style.EMPTY.withBold(true));
                     } else {
                         baseComponent = Component.translatable("tooltip.herosigil.slot.active",
                             this.slotId + 1, "Unknown Buff");
@@ -413,10 +411,12 @@ public class BuffSlotWidget extends AbstractButton {
                 }
             }
 
-            this.tooltip = net.minecraft.client.gui.components.Tooltip.create(
-                baseComponent.getVisualOrder(),
-                getTooltipLines()
-            );
+            // Combine the base line and additional lines into one multi-line component
+            net.minecraft.network.chat.MutableComponent combined = baseComponent.copy();
+            for (Component line : getTooltipLines()) {
+                combined = combined.append(Component.literal("\n")).append(line);
+            }
+            this.tooltip = net.minecraft.client.gui.components.Tooltip.create(combined);
         }
 
         return this.tooltip;
@@ -431,7 +431,7 @@ public class BuffSlotWidget extends AbstractButton {
                 com.hero.sigil.achievement.AchievementTracker.AchievementType.values();
 
             if (this.slotId < achievements.length) {
-                com.hero.sigil.achievement.AchievementType achievement = achievements[this.slotId];
+                com.hero.sigil.achievement.AchievementTracker.AchievementType achievement = achievements[this.slotId];
                 lines.add(Component.translatable("tooltip.herosigil.requirement",
                     Component.translatable(getAchievementKey())));
 
@@ -450,9 +450,9 @@ public class BuffSlotWidget extends AbstractButton {
 
             if (this.slotId >= 0 && this.slotId < Math.min(buffs.size(), 3)) {
                 com.hero.sigil.buffs.BuffEffect buff = buffs.get(this.slotId);
-                net.minecraft.world.effect.MobEffect effect = buff.getMobEffect();
+                net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect = buff.getMobEffect();
                 if (effect != null) {
-                    lines.add(Component.translatable(effect.getDescriptionId()).withStyle(net.minecraft.network.chat.Style.EMPTY.withBold(true)));
+                    lines.add(Component.translatable(effect.value().getDescriptionId()).withStyle(net.minecraft.network.chat.Style.EMPTY.withBold(true)));
 
                     // 显示放大器等级
                     int amplifier = buff.getAmplifier();
@@ -493,10 +493,6 @@ public class BuffSlotWidget extends AbstractButton {
         return lines;
     }
 
-    @Override
-    public net.minecraft.client.gui.components.Tooltip getNarration() {
-        return super.getNarration();
-    }
 
     /**
      * Set the unlocked state of this buff slot.
@@ -528,15 +524,13 @@ public class BuffSlotWidget extends AbstractButton {
             // Play sound for visual feedback
             Minecraft minecraft = Minecraft.getInstance();
             if (pActive) {
-                minecraft.getSoundSource().play(
-                    net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK_PRESS,
-                    net.minecraft.client.resources.sounds.SimpleSoundInstance.defaultVolume()
-                );
+                minecraft.getSoundManager().play(
+
+                    net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
             } else {
-                minecraft.getSoundSource().play(
-                    net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK_RELEASE,
-                    net.minecraft.client.resources.sounds.SimpleSoundInstance.defaultVolume()
-                );
+                minecraft.getSoundManager().play(
+
+                    net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
             }
         }
     }
@@ -553,16 +547,78 @@ public class BuffSlotWidget extends AbstractButton {
      */
     public void updateState() {
         // Reset tooltip cache on state change
-        if (this.tooltip != null) {
-            this.tooltip = net.minecraft.client.gui.components.Tooltip.create(
-                getTooltip().getVisualOrder(),
-                getTooltipLines()
-            );
-        }
+        this.tooltip = null;
     }
 
     @Override
     protected void updateWidgetNarration(NarrationElementOutput pNarrationElementOutput) {
         // No special narration needed for this widget
+    }
+
+    /**
+     * Draw a filled circle approximated with scanlines.
+     */
+    private void drawCircle(GuiGraphics guiGraphics, float pCx, float pCy, float pRadius, int pColor) {
+        int r = Math.max(1, (int) pRadius);
+        for (int dy = -r; dy <= r; dy++) {
+            int half = (int) Math.sqrt((double) (r * r - dy * dy));
+            guiGraphics.fill((int) (pCx - half), (int) (pCy + dy),
+                (int) (pCx + half) + 1, (int) (pCy + dy) + 1, pColor);
+        }
+    }
+
+    /**
+     * Draw a filled triangle using per-pixel winding tests.
+     */
+    private void drawTriangle(GuiGraphics guiGraphics, float pX1, float pY1, float pX2, float pY2,
+                               float pX3, float pY3, int pColor) {
+        int minX = (int) (Math.min(pX1, Math.min(pX2, pX3)) - 1);
+        int maxX = (int) (Math.max(pX1, Math.max(pX2, pX3)) + 2);
+        int minY = (int) (Math.min(pY1, Math.min(pY2, pY3)) - 1);
+        int maxY = (int) (Math.max(pY1, Math.max(pY2, pY3)) + 2);
+        for (int py = minY; py < maxY; py++) {
+            float fy = py + 0.5f;
+            for (int px = minX; px < maxX; px++) {
+                float fx = px + 0.5f;
+                float d1 = (fx - pX2) * (pY1 - pY2) + (pX2 - pX1) * (fy - pY2);
+                float d2 = (fx - pX3) * (pY2 - pY3) + (pX3 - pX2) * (fy - pY3);
+                float d3 = (fx - pX1) * (pY3 - pY1) + (pX1 - pX3) * (fy - pY1);
+                boolean hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+                boolean hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+                if (!(hasNeg && hasPos)) {
+                    guiGraphics.fill(px, py, px + 1, py + 1, pColor);
+                }
+            }
+        }
+    }
+
+    /**
+     * Draw a 1 pixel line using Bresenham's algorithm.
+     */
+    private void drawLine(GuiGraphics guiGraphics, float pX1, float pY1, float pX2, float pY2, int pColor) {
+        int x0 = (int) pX1;
+        int y0 = (int) pY1;
+        int x1 = (int) pX2;
+        int y1 = (int) pY2;
+        int dx = Math.abs(x1 - x0);
+        int dy = -Math.abs(y1 - y0);
+        int sx = x0 < x1 ? 1 : -1;
+        int sy = y0 < y1 ? 1 : -1;
+        int err = dx + dy;
+        while (true) {
+            guiGraphics.fill(x0, y0, x0 + 1, y0 + 1, pColor);
+            if (x0 == x1 && y0 == y1) {
+                break;
+            }
+            int e2 = 2 * err;
+            if (e2 >= dy) {
+                err += dy;
+                x0 += sx;
+            }
+            if (e2 <= dx) {
+                err += dx;
+                y0 += sy;
+            }
+        }
     }
 }
