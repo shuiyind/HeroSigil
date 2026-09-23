@@ -6,6 +6,8 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 
+import com.hero.sigil.util.TickMath;
+
 /**
  * Represents a buff effect that can be unlocked and activated on the Hero Sigil.
  */
@@ -59,7 +61,7 @@ public class BuffEffect {
 
             MobEffectInstance effectInstance = new MobEffectInstance(
                 mobEffect,
-                duration * 20, // Convert seconds to ticks (1 second = 20 ticks)
+                TickMath.secondsToEffectTicks(duration), // Convert seconds to ticks (1 second = 20 ticks)
                 amplifier,     // Amplifier level (0 = base, 1 = stronger, etc.)
                 false,         // Particles visible
                 true           // Show in status effects GUI
@@ -99,7 +101,7 @@ public class BuffEffect {
 
         // 非永久 buff: 检查是否需要刷新
         long currentTick = player.tickCount;
-        long refreshIntervalTicks = refreshIntervalSeconds * 20;
+        long refreshIntervalTicks = TickMath.secondsToTicks(refreshIntervalSeconds);
 
         // 如果距离上次刷新时间充足，跳过本次刷新
         if (lastRefreshTick > 0 && (currentTick - lastRefreshTick) < refreshIntervalTicks) {
@@ -131,7 +133,7 @@ public class BuffEffect {
 
         MobEffectInstance effectInstance = new MobEffectInstance(
             mobEffect,
-            duration * 20, // Convert seconds to ticks (1 second = 20 ticks)
+            TickMath.secondsToEffectTicks(duration), // Convert seconds to ticks (1 second = 20 ticks)
             amplifier,     // Amplifier level (0 = base, 1 = stronger, etc.)
             false,         // Particles visible
             true           // Show in status effects GUI
@@ -283,7 +285,7 @@ public class BuffEffect {
             return -1; // 永久 buff
         }
         long elapsedTicks = currentTick - lastRefreshTick;
-        long remainingTicks = refreshIntervalSeconds * 20 - elapsedTicks;
+        long remainingTicks = TickMath.secondsToTicks(refreshIntervalSeconds) - elapsedTicks;
         if (remainingTicks < 0) {
             return 0;
         }

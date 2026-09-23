@@ -1,0 +1,4 @@
+name: HeroSigil CodeQL
+
+paths:
+  - src

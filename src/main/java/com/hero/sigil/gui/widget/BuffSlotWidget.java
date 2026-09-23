@@ -123,12 +123,8 @@ public class BuffSlotWidget extends AbstractButton {
 
     private void drawBuffIcon(GuiGraphics guiGraphics, Minecraft minecraft) {
         // 获取 Buff 类型
-        java.util.List<com.hero.sigil.buffs.BuffEffect> buffs =
-            com.hero.sigil.buffs.HeroSigilData.getAllBuffs();
-
-        if (this.slotId >= 0 && this.slotId < Math.min(buffs.size(), 3)) {
-            com.hero.sigil.buffs.BuffEffect buff = buffs.get(this.slotId);
-
+        int buffCount = Math.min(com.hero.sigil.buffs.HeroSigilData.getAllBuffs().size(), 3);
+        if (this.slotId >= 0 && this.slotId < buffCount) {
             // 获取中心点坐标和半径
             float centerX = this.getX() + this.getWidth() / 2;
             float centerY = this.getY() + this.getHeight() / 2;
@@ -391,12 +387,9 @@ public class BuffSlotWidget extends AbstractButton {
                 baseComponent = Component.translatable("tooltip.herosigil.slot.unlocked", this.slotId + 1);
             } else {
                 // Get active buff name from HeroSigilData
-                java.util.List<com.hero.sigil.buffs.BuffEffect> buffs =
-                    com.hero.sigil.buffs.HeroSigilData.getAllBuffs();
-
-                String buffName = "";
-                if (this.slotId >= 0 && this.slotId < Math.min(buffs.size(), 3)) {
-                    com.hero.sigil.buffs.BuffEffect buff = buffs.get(this.slotId);
+                int buffCount = Math.min(com.hero.sigil.buffs.HeroSigilData.getAllBuffs().size(), 3);
+                if (this.slotId >= 0 && this.slotId < buffCount) {
+                    com.hero.sigil.buffs.BuffEffect buff = com.hero.sigil.buffs.HeroSigilData.getAllBuffs().get(this.slotId);
                     // Get the localized name from MobEffect's translation key
                     net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect = buff.getMobEffect();
                     if (effect != null) {
@@ -431,7 +424,6 @@ public class BuffSlotWidget extends AbstractButton {
                 com.hero.sigil.achievement.AchievementTracker.AchievementType.values();
 
             if (this.slotId < achievements.length) {
-                com.hero.sigil.achievement.AchievementTracker.AchievementType achievement = achievements[this.slotId];
                 lines.add(Component.translatable("tooltip.herosigil.requirement",
                     Component.translatable(getAchievementKey())));
 
@@ -445,11 +437,9 @@ public class BuffSlotWidget extends AbstractButton {
             lines.add(Component.translatable("tooltip.herosigil.click_to_activate"));
 
             // Show what buff will be activated
-            java.util.List<com.hero.sigil.buffs.BuffEffect> buffs =
-                com.hero.sigil.buffs.HeroSigilData.getAllBuffs();
-
-            if (this.slotId >= 0 && this.slotId < Math.min(buffs.size(), 3)) {
-                com.hero.sigil.buffs.BuffEffect buff = buffs.get(this.slotId);
+            int buffCount = Math.min(com.hero.sigil.buffs.HeroSigilData.getAllBuffs().size(), 3);
+            if (this.slotId >= 0 && this.slotId < buffCount) {
+                com.hero.sigil.buffs.BuffEffect buff = com.hero.sigil.buffs.HeroSigilData.getAllBuffs().get(this.slotId);
                 net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect = buff.getMobEffect();
                 if (effect != null) {
                     lines.add(Component.translatable(effect.value().getDescriptionId()).withStyle(net.minecraft.network.chat.Style.EMPTY.withBold(true)));
@@ -463,11 +453,9 @@ public class BuffSlotWidget extends AbstractButton {
             }
         } else {
             // Show current active status and duration info
-            java.util.List<com.hero.sigil.buffs.BuffEffect> buffs =
-                com.hero.sigil.buffs.HeroSigilData.getAllBuffs();
-
-            if (this.slotId >= 0 && this.slotId < Math.min(buffs.size(), 3)) {
-                com.hero.sigil.buffs.BuffEffect buff = buffs.get(this.slotId);
+            int buffCount = Math.min(com.hero.sigil.buffs.HeroSigilData.getAllBuffs().size(), 3);
+            if (this.slotId >= 0 && this.slotId < buffCount) {
+                com.hero.sigil.buffs.BuffEffect buff = com.hero.sigil.buffs.HeroSigilData.getAllBuffs().get(this.slotId);
 
                 lines.add(Component.translatable("tooltip.herosigil.active_status",
                     Component.literal("✓").withStyle(net.minecraft.network.chat.Style.EMPTY.withBold(true))));
@@ -538,6 +526,7 @@ public class BuffSlotWidget extends AbstractButton {
     /**
      * Check if this buff slot is currently active.
      */
+    @Override
     public boolean isActive() {
         return this.active;
     }

@@ -434,29 +434,12 @@ public class HeroSigilData {
     }
 
     /**
-     * 从 v2 迁移到 v3: Buff ID 重新映射
+     * 从 v2 迁移到 v3: 更新数据结构版本
      */
     private static CompoundTag migrateFromV2ToV3(CompoundTag data, Player player) {
-        HeroSigil.LOGGER.info("Migrating from v2 to v3: Remapping buff IDs for player {}", player.getScoreboardName());
+        HeroSigil.LOGGER.info("Migrating from v2 to v3 for player {}", player.getScoreboardName());
 
-        // 定义旧 ID 到新 ID 的映射
-        java.util.Map<String, String> buffIdMapping = new java.util.HashMap<>();
-        buffIdMapping.put("saturation", "food_saver");      // 示例：重命名
-        buffIdMapping.put("health_boost", "vitality");       // 示例：重命名
-        buffIdMapping.put("speed", "swiftness");             // 示例：重命名
-
-        // 迁移每个槽位的 buff ID
-        for (int i = 1; i <= 3; i++) {
-            String slotKey = "slot_" + i;
-            if (data.contains(slotKey)) {
-                CompoundTag slotData = data.getCompound(slotKey);
-
-                // 如果需要迁移 buff ID，可以在这里添加逻辑
-                // 例如：slotData.putString("buffId", buffIdMapping.get(slotData.getString("buffId")))
-            }
-        }
-
-        // 更新版本号
+        // Slot data stores only unlocked/active flags, so there are no buff IDs to remap.
         data.putInt(VERSION_TAG, 3);
 
         HeroSigil.LOGGER.info("Migration v2 -> v3 completed for player {}", player.getScoreboardName());

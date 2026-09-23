@@ -39,7 +39,7 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          queries: security-and-quality
+          config-file: ./.github/codeql/codeql-config.yml
 
       - name: Cache Gradle
         uses: actions/cache@v4

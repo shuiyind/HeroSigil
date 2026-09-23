@@ -23,6 +23,7 @@ sourceSets.main.resources {
 }
 
 repositories {
+    mavenCentral()
     // Add here additional repositories if required by some of the dependencies below.
     maven { url = 'https://maven.neoforged.net/releases' }
     maven { url = 'https://maven.theillusivec4.top/' }  // Curios API
@@ -120,6 +121,9 @@ dependencies {
     // And its provides the option to then use net.minecraft as the group, and one of; client, server or joined as the module name, plus the game version as version.
     // For all intends and purposes: You can treat this dependency as if it is a vanilla library you would use.
     implementation "net.neoforged:neoforge:${neo_version}"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
 
     // Curios API for accessory/equipment slots (暂时注释，等待修复)
     // compileOnly files('libs/Curios-API/build/libs')

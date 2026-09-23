@@ -1,6 +1,7 @@
 package com.hero.sigil.achievement;
 
 import com.hero.sigil.HeroSigil;
+import com.hero.sigil.util.SetMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,7 +17,6 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +32,7 @@ public class AchievementTracker {
     private static final Map<String, PlayerProgress> PLAYER_PROGRESSES = new HashMap<>();
 
     // Track biome exploration per player (key: playerId -> set of biomes visited)
-    private static final Map<String, Set<ResourceKey<net.minecraft.world.level.biome.Biome>>> BIOME_VISITS = new HashMap<>();
+    private static final SetMap<ResourceKey<net.minecraft.world.level.biome.Biome>> BIOME_VISITS = new SetMap<>();
 
     /**
      * Achievements that unlock buff slots on the Hero Sigil.
@@ -236,7 +236,7 @@ public class AchievementTracker {
         Player player = event.getEntity();
 
         // Track biome exploration for EXPLORE_ALL_BIOMES achievement
-        if (player instanceof ServerPlayer serverPlayer) {
+        if (player instanceof ServerPlayer) {
             // 每 100 tick (5 秒) 记录一次群系，而非每个 tick
             if (player.tickCount % 100 != 0) {
                 return;
@@ -258,10 +258,8 @@ public class AchievementTracker {
                 boolean isNewBiome = visitedBiomes == null || !visitedBiomes.contains(currentBiome);
 
                 if (isNewBiome) {
-                    BIOME_VISITS.computeIfAbsent(playerId, k -> new HashSet<>()).add(currentBiome);
-
                     // 更新进度提示变量（添加新群系后的数量）
-                    int progressCount = visitedBiomes.size();
+                    int progressCount = recordBiomeVisit(playerId, currentBiome);
 
                     // 每访问 5 个新群系，发送一次进度提示
                     if (progressCount % 5 == 0 && progressCount < 20) {
@@ -420,9 +418,19 @@ public class AchievementTracker {
      * 获取当前群系访问计数（用于调试/测试）
      */
     public static int getBiomeVisitCount(Player player) {
-        String playerId = player.getUUID().toString();
-        Set<ResourceKey<net.minecraft.world.level.biome.Biome>> biomes = BIOME_VISITS.get(playerId);
-        return biomes != null ? biomes.size() : 0;
+        return getBiomeVisitCount(player.getUUID().toString());
+    }
+
+    static int recordBiomeVisit(String playerId, ResourceKey<net.minecraft.world.level.biome.Biome> biome) {
+        return BIOME_VISITS.add(playerId, biome);
+    }
+
+    static int getBiomeVisitCount(String playerId) {
+        return BIOME_VISITS.size(playerId);
+    }
+
+    static void clearBiomeVisits(String playerId) {
+        BIOME_VISITS.remove(playerId);
     }
 
     /**
@@ -437,8 +445,7 @@ public class AchievementTracker {
      * Get the number of distinct biomes visited by a player.
      */
     public static int getExploredBiomeCount(Player player) {
-        Set<ResourceKey<net.minecraft.world.level.biome.Biome>> biomes = BIOME_VISITS.get(player.getUUID().toString());
-        return biomes != null ? biomes.size() : 0;
+        return getBiomeVisitCount(player.getUUID().toString());
     }
 
     /**
@@ -466,7 +473,6 @@ public class AchievementTracker {
      * Clear all biome visit data (for testing).
      */
     public static void clearBiomeVisits(Player player) {
-        String playerId = player.getUUID().toString();
-        BIOME_VISITS.remove(playerId);
+        clearBiomeVisits(player.getUUID().toString());
     }
 }

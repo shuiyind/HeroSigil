@@ -170,6 +170,7 @@ public class HeroSigilScreen extends AbstractContainerScreen<HeroSigilMenu> {
     /**
      * Get the Hero Sigil menu for this screen.
      */
+    @Override
     public HeroSigilMenu getMenu() {
         return this.menu;
     }
